@@ -9,6 +9,10 @@ import {
   LogOut,
   LayoutDashboard,
   User,
+  FileText,
+  Heart,
+  MessageCircle,
+  Bell,
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
@@ -69,13 +73,30 @@ const Navbar = () => {
     navigate("/login");
   };
 
-  const navLinks = [
-    { name: "Dashboard", href: "/clientDashboard" },
-    { name: "Post Jobs", href: "/PostJob" },
-    { name: "Categories", href: "/Category" },
-    { name: "Messages", href: "/messages" },
-    { name: "Payments", href: "/payments" },
-  ];
+  // Navigation links based on user role
+  const getNavLinks = () => {
+    if (!isLoggedIn || !user) return [];
+    
+    if (user.role === "CLIENT") {
+      return [
+        { name: "Dashboard", href: "/clientDashboard" },
+        { name: "Post Job", href: "/PostJob" },
+        { name: "My Jobs", href: "/MyJobs" },
+        { name: "My Contracts", href: "/my-contracts" },
+        { name: "Find Freelancers", href: "/freelancers" },
+      ];
+    } else if (user.role === "FREELANCER") {
+      return [
+        { name: "Browse Jobs", href: "/browse-jobs" },
+        { name: "My Proposals", href: "/my-proposals" },
+        { name: "My Contracts", href: "/my-contracts-freelancer" },
+        { name: "Saved Jobs", href: "/saved-jobs" },
+      ];
+    }
+    return [];
+  };
+
+  const navLinks = getNavLinks();
 
   return (
     <header className="sticky top-0 z-50 border-b border-slate-200/60 bg-white/80 backdrop-blur-xl">
@@ -146,21 +167,88 @@ const Navbar = () => {
                           className="flex items-center gap-3 px-4 py-3 hover:bg-slate-50 text-slate-700"
                         >
                           <User size={18} />
-                          profile
+                          Profile
                         </Link>
+
+                        {user?.role === "CLIENT" && (
+                          <>
+                            <Link
+                              to="/clientDashboard"
+                              className="flex items-center gap-3 px-4 py-3 hover:bg-slate-50 text-slate-700"
+                            >
+                              <LayoutDashboard size={18} />
+                              Dashboard
+                            </Link>
+                            <Link
+                              to="/MyJobs"
+                              className="flex items-center gap-3 px-4 py-3 hover:bg-slate-50 text-slate-700"
+                            >
+                              <Briefcase size={18} />
+                              My Jobs
+                            </Link>
+                            <Link
+                              to="/my-contracts"
+                              className="flex items-center gap-3 px-4 py-3 hover:bg-slate-50 text-slate-700"
+                            >
+                              <FileText size={18} />
+                              My Contracts
+                            </Link>
+                            <Link
+                              to="/freelancers"
+                              className="flex items-center gap-3 px-4 py-3 hover:bg-slate-50 text-slate-700"
+                            >
+                              <User size={18} />
+                              Find Freelancers
+                            </Link>
+                          </>
+                        )}
+
+                        {user?.role === "FREELANCER" && (
+                          <>
+                            <Link
+                              to="/browse-jobs"
+                              className="flex items-center gap-3 px-4 py-3 hover:bg-slate-50 text-slate-700"
+                            >
+                              <Briefcase size={18} />
+                              Browse Jobs
+                            </Link>
+                            <Link
+                              to="/my-proposals"
+                              className="flex items-center gap-3 px-4 py-3 hover:bg-slate-50 text-slate-700"
+                            >
+                              <FileText size={18} />
+                              My Proposals
+                            </Link>
+                            <Link
+                              to="/my-contracts-freelancer"
+                              className="flex items-center gap-3 px-4 py-3 hover:bg-slate-50 text-slate-700"
+                            >
+                              <Briefcase size={18} />
+                              My Contracts
+                            </Link>
+                            <Link
+                              to="/saved-jobs"
+                              className="flex items-center gap-3 px-4 py-3 hover:bg-slate-50 text-slate-700"
+                            >
+                              <Heart size={18} />
+                              Saved Jobs
+                            </Link>
+                          </>
+                        )}
+
                         <Link
-                          to="/clientDashboard"
+                          to="/chat"
                           className="flex items-center gap-3 px-4 py-3 hover:bg-slate-50 text-slate-700"
                         >
-                          <LayoutDashboard size={18} />
-                          Dashboard
+                          <MessageCircle size={18} />
+                          Messages
                         </Link>
                         <Link
-                          to="/Myjobs"
+                          to="/notifications"
                           className="flex items-center gap-3 px-4 py-3 hover:bg-slate-50 text-slate-700"
                         >
-                          <Briefcase size={18} />
-                          My Jobs
+                          <Bell size={18} />
+                          Notifications
                         </Link>
                       </div>
 

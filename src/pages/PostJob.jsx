@@ -58,8 +58,6 @@ export default function PostJob() {
       duration: formData.duration,
     };
 
-    console.log("Payload:", payload);
-
     try {
       setLoading(true);
 
@@ -73,9 +71,11 @@ export default function PostJob() {
         },
       );
 
-      console.log(response.data);
-
       alert("Job Posted Successfully");
+
+      if(response.ok){
+        navigate("/PostJob")
+      }
 
       setFormData({
         title: "",

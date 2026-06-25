@@ -4,18 +4,17 @@ import "./index.css";
 import App from "./App.jsx";
 
 import { AuthProvider } from "./context/AuthContext.jsx";
+import { ChatProvider } from "./context/ChatContext.jsx";
 import { BrowserRouter } from "react-router-dom";
-// import { Toaster } from "react-hot-toast";
-// import { Toaster } from "sonner";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <AuthProvider>
-      <BrowserRouter>
-        <App />
-        {/* <Toaster position="top-right" /> */}
-        {/* <Toaster richColors /> */}
-      </BrowserRouter>
+      <ChatProvider>
+        <BrowserRouter>
+          <App />
+        </BrowserRouter>
+      </ChatProvider>
     </AuthProvider>
   </StrictMode>,
 );
