@@ -35,7 +35,7 @@ const Register = () => {
 
     try {
       const res = await axios.post(
-        "http://10.121.52.123:8000/api/auth/register",
+        `${import.meta.env.VITE_API_BASE_URL}/api/auth/register`,
         formData,
       );
 

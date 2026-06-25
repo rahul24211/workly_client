@@ -28,7 +28,30 @@ api.interceptors.response.use(
   }
 );
 
-// ==================== AUTH APIs ====================
+// ==================== AUTH APIs (OTP Based) ====================
+export const authOtpAPI = {
+  sendRegistrationOTP: (data) =>
+    api.post("/api/auth/send-registration-otp", data),
+  verifyRegistrationOTP: (data) =>
+    api.post("/api/auth/verify-registration-otp", data),
+  resendOTP: (data) => api.post("/api/auth/resend-otp", data),
+  login: (data) => api.post("/api/auth/login", data),
+};
+
+// ==================== PROFILE COMPLETION APIs ====================
+export const profileAPI = {
+  getProfileStatus: () => api.get("/api/profile/status"),
+  completeClientProfile: (data) =>
+    api.post("/api/profile/complete-client-profile", data, {
+      headers: { "Content-Type": "multipart/form-data" },
+    }),
+  completeFreelancerProfile: (data) =>
+    api.post("/api/profile/complete-freelancer-profile", data, {
+      headers: { "Content-Type": "multipart/form-data" },
+    }),
+};
+
+// ==================== AUTH APIs (Legacy) ====================
 export const authAPI = {
   register: (data) => api.post("/api/auth/register", data),
   login: (data) => api.post("/api/auth/login", data),
@@ -56,7 +79,7 @@ export const clientAPI = {
   updateProposalStatus: (data) =>
     api.patch("/api/client/updateproposalstatus", data),
   completeContract: (contractId) =>
-  api.patch(`/api/client/completecontract?id=${contractId}`),
+    api.patch(`/api/client/completecontract?id=${contractId}`),
   createReview: (data) => api.post("/api/client/createReview", data),
   getFreelancers: (search = "") =>
     api.get("/api/client/getfreelincers", { params: { search } }),
@@ -82,9 +105,10 @@ export const freelancerAPI = {
     }),
   deletePortfolio: (portfolioId) =>
     api.delete("/api/freelancer/deleteportfolio", { params: { id: portfolioId } }),
-  submitWork: (data) => api.post("/api/freelancer/submitwork", data, {
-    headers: { "Content-Type": "multipart/form-data" },
-  }),
+  submitWork: (data) =>
+    api.post("/api/freelancer/submitwork", data, {
+      headers: { "Content-Type": "multipart/form-data" },
+    }),
   getFreelancerDashboard: () =>
     api.get("/api/freelancer/freelincerdashboard"),
   saveJob: (jobId) => api.post("/api/freelancer/savedjobs", { jobId }),

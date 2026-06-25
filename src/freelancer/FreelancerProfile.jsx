@@ -11,7 +11,7 @@ export default function FreelancerProfile() {
       const token = localStorage.getItem("token");
 
       const response = await axios.get(
-        "http://10.121.52.123:8000/api/auth/getmyprofile",
+        `${import.meta.env.VITE_API_BASE_URL}/api/auth/getmyprofile`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

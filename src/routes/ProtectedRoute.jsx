@@ -4,6 +4,10 @@ import { useAuth } from "../context/AuthContext";
 export default function ProtectedRoute({ children, role }) {
   const { user, token, loading } = useAuth();
 
+
+console.log("ProtectedRoute User:", user);
+console.log("ProtectedRoute Loading:", loading);
+
   // LocalStorage check hone tak wait karo
   if (loading) {
     return (

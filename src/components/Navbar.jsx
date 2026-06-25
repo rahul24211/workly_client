@@ -120,16 +120,16 @@ const Navbar = () => {
 
           {/* Desktop Navigation */}
           <nav className="hidden lg:flex items-center gap-8">
-            {navLinks.map((link) => (
-              <a
-                key={link.name}
-                href={link.href}
-                className="font-medium text-slate-600 transition hover:text-green-600"
-              >
-                {link.name}
-              </a>
-            ))}
-          </nav>
+  {navLinks.map((link) => (
+    <Link
+      key={link.name}
+      to={link.href}
+      className="font-medium text-slate-600 transition hover:text-green-600"
+    >
+      {link.name}
+    </Link>
+  ))}
+</nav>
 
           {/* Desktop Right Side */}
           <div className="hidden lg:flex items-center gap-4">

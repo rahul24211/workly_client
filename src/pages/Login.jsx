@@ -18,34 +18,67 @@ const Login = () => {
     if (error) setError(""); // Clear error when user types
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError("");
-    setLoading(true);
+ const handleSubmit = async (e) => {
+  e.preventDefault();
+  setError("");
+  setLoading(true);
 
-    try {
-      const response = await fetch("http://10.121.52.123:8000/api/auth/login", {
+  try {
+    const response = await fetch(
+      `${import.meta.env.VITE_API_BASE_URL}/api/auth/login`,
+      {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify(formData),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || "Invalid email or password");
       }
+    );
 
-      // Success
-      login(data.user, data.token);
-      window.dispatchEvent(new Event("authChange"));
-      navigate("/clientDashboard");
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        data.message || "Invalid email or password"
+      );
     }
-  };
+
+    login(data.user, data.token);
+    window.dispatchEvent(new Event("authChange"));
+
+    const { role, profile_completed } = data.user;
+
+    // ADMIN
+    if (role === "ADMIN") {
+      navigate("/adminDashboard");
+      return;
+    }
+
+    // FREELANCER
+    if (role === "FREELANCER") {
+      if (profile_completed) {
+        navigate("/freelancerProfile");
+      } else {
+        navigate("/create-freelancer-profile");
+      }
+      return;
+    }
+
+    // CLIENT
+    if (role === "CLIENT") {
+      if (profile_completed) {
+        navigate("/clientDashboard");
+      } else {
+        navigate("/create-client-profile");
+      }
+      return;
+    }
+  } catch (err) {
+    setError(err.message);
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-4">

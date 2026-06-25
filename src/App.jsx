@@ -5,6 +5,7 @@ import Navbar from "./components/Navbar";
 
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import RegisterWithOTP from "./pages/RegisterWithOTP";
 
 // Client Pages
 import ClientDashboard from "./pages/ClientDashboard";
@@ -14,12 +15,14 @@ import ClientContracts from "./pages/ClientContracts";
 import ProposalDetails from "./pages/ProposalDetails";
 import FreelancersList from "./pages/FreelancersList";
 import FreelancerDetails from "./pages/FreelancerDetails";
+import CreateClientProfile from "./pages/CreateClientProfile";
 
 // Freelancer Pages
 import BrowseJobs from "./pages/BrowseJobs";
 import MyProposals from "./pages/MyProposals";
 import MyContracts from "./pages/MyContracts";
 import SavedJobs from "./pages/SavedJobs";
+import CreateFreelancerProfile from "./pages/CreateFreelancerProfile";
 
 // Shared Pages
 import Chat from "./pages/Chat";
@@ -30,6 +33,7 @@ import CreateProfile from "./freelancer/CreateProfile";
 import FreelancerProfile from "./freelancer/FreelancerProfile";
 
 import ProtectedRoute from "./routes/ProtectedRoute";
+import { ProtectedRouteWithProfileCheck } from "./routes/ProfileCompletionGuard";
 
 function App() {
   return (
@@ -41,119 +45,159 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/register-with-otp" element={<RegisterWithOTP />} />
 
-        {/* CLIENT Protected Routes */}
+        {/* Profile Completion Routes (Protected but allow incomplete profiles) */}
+        <Route
+          path="/create-profile"
+          element={
+            <ProtectedRoute>
+              {/* Route to correct profile completion page based on role */}
+              <CreateProfileRouter />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/create-client-profile"
+          element={
+            <ProtectedRoute role="CLIENT">
+              <CreateClientProfile />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/create-freelancer-profile"
+          element={
+            <ProtectedRoute role="FREELANCER">
+              <CreateFreelancerProfile />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* CLIENT Protected Routes (with profile completion check) */}
         <Route
           path="/clientDashboard"
           element={
-            <ProtectedRoute role="CLIENT">
+            <ProtectedRouteWithProfileCheck role="CLIENT">
               <ClientDashboard />
-            </ProtectedRoute>
+            </ProtectedRouteWithProfileCheck>
           }
         />
 
         <Route
           path="/PostJob"
           element={
-            <ProtectedRoute role="CLIENT">
+            <ProtectedRouteWithProfileCheck role="CLIENT">
               <PostJobs />
-            </ProtectedRoute>
+            </ProtectedRouteWithProfileCheck>
           }
         />
 
         <Route
           path="/MyJobs"
           element={
-            <ProtectedRoute role="CLIENT">
+            <ProtectedRouteWithProfileCheck role="CLIENT">
               <MyJobs />
-            </ProtectedRoute>
+            </ProtectedRouteWithProfileCheck>
           }
         />
 
         <Route
           path="/my-contracts"
           element={
-            <ProtectedRoute role="CLIENT">
+            <ProtectedRouteWithProfileCheck role="CLIENT">
               <ClientContracts />
-            </ProtectedRoute>
+            </ProtectedRouteWithProfileCheck>
           }
         />
 
         <Route
           path="/proposal/:proposalId"
           element={
-            <ProtectedRoute role="CLIENT">
+            <ProtectedRouteWithProfileCheck role="CLIENT">
               <ProposalDetails />
-            </ProtectedRoute>
+            </ProtectedRouteWithProfileCheck>
           }
         />
 
         <Route
           path="/freelancers"
           element={
-            <ProtectedRoute role="CLIENT">
+            <ProtectedRouteWithProfileCheck role="CLIENT">
               <FreelancersList />
-            </ProtectedRoute>
+            </ProtectedRouteWithProfileCheck>
           }
         />
 
         <Route
           path="/freelancer-detail/:freelancerId"
           element={
-            <ProtectedRoute role="CLIENT">
+            <ProtectedRouteWithProfileCheck role="CLIENT">
               <FreelancerDetails />
-            </ProtectedRoute>
+            </ProtectedRouteWithProfileCheck>
           }
         />
 
-        {/* FREELANCER Protected Routes */}
+        {/* FREELANCER Protected Routes (with profile completion check) */}
         <Route
           path="/browse-jobs"
           element={
-            <ProtectedRoute role="FREELANCER">
+            <ProtectedRouteWithProfileCheck role="FREELANCER">
               <BrowseJobs />
-            </ProtectedRoute>
+            </ProtectedRouteWithProfileCheck>
           }
         />
 
         <Route
           path="/job/:jobId"
           element={
-            <ProtectedRoute role="FREELANCER">
+            <ProtectedRouteWithProfileCheck role="FREELANCER">
               <BrowseJobs />
-            </ProtectedRoute>
+            </ProtectedRouteWithProfileCheck>
           }
         />
 
         <Route
           path="/my-proposals"
           element={
-            <ProtectedRoute role="FREELANCER">
+            <ProtectedRouteWithProfileCheck role="FREELANCER">
               <MyProposals />
-            </ProtectedRoute>
+            </ProtectedRouteWithProfileCheck>
           }
         />
 
         <Route
           path="/my-contracts-freelancer"
           element={
-            <ProtectedRoute role="FREELANCER">
+            <ProtectedRouteWithProfileCheck role="FREELANCER">
               <MyContracts />
-            </ProtectedRoute>
+            </ProtectedRouteWithProfileCheck>
           }
         />
 
         <Route
           path="/saved-jobs"
           element={
-            <ProtectedRoute role="FREELANCER">
+            <ProtectedRouteWithProfileCheck role="FREELANCER">
               <SavedJobs />
-            </ProtectedRoute>
+            </ProtectedRouteWithProfileCheck>
           }
         />
 
         <Route
-          path="/create-profile"
+          path="/freelancerProfile"
+          element={
+            <ProtectedRouteWithProfileCheck role="FREELANCER">
+              <FreelancerProfile />
+            </ProtectedRouteWithProfileCheck>
+          }
+        />
+
+        {/* Legacy Routes (keep for backward compatibility) */}
+        <Route
+          path="/create-profile-legacy"
           element={
             <ProtectedRoute role="FREELANCER">
               <CreateProfile />
@@ -161,36 +205,41 @@ function App() {
           }
         />
 
-        <Route
-          path="/freelancerProfile"
-          element={
-            <ProtectedRoute role="FREELANCER">
-              <FreelancerProfile />
-            </ProtectedRoute>
-          }
-        />
-
-        {/* SHARED Protected Routes (Both Client and Freelancer) */}
+        {/* SHARED Protected Routes (Both Client and Freelancer, with profile completion check) */}
         <Route
           path="/chat"
           element={
-            <ProtectedRoute>
+            <ProtectedRouteWithProfileCheck>
               <Chat />
-            </ProtectedRoute>
+            </ProtectedRouteWithProfileCheck>
           }
         />
 
         <Route
           path="/notifications"
           element={
-            <ProtectedRoute>
+            <ProtectedRouteWithProfileCheck>
               <Notifications />
-            </ProtectedRoute>
+            </ProtectedRouteWithProfileCheck>
           }
         />
       </Routes>
     </>
   );
 }
+
+/**
+ * Router component to redirect to appropriate profile creation page based on role
+ */
+const CreateProfileRouter = () => {
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  const role = user.role?.toLowerCase() || "freelancer";
+
+  if (role === "client") {
+    return <CreateClientProfile />;
+  } else {
+    return <CreateFreelancerProfile />;
+  }
+};
 
 export default App;

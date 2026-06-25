@@ -40,7 +40,7 @@ export default function Home() {
   return (
     <div className="bg-slate-50">
       {/* Hero Section */}
-      <section className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 text-white py-24">
+      <section className=" py-24">
         <div className="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-10 items-center">
           <div>
             <h1 className="text-5xl lg:text-6xl font-bold leading-tight">
