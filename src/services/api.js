@@ -63,11 +63,17 @@ export const authAPI = {
   getMyContracts: () => api.get("/api/auth/getmycontracts"),
   getContractDetails: (contractId) =>
     api.get("/api/auth/getcontractdetails", { params: { contractId } }),
-  getNotifications: () => api.get("/api/auth/getnotifications"),
+  getNotifications: (page, limit) =>
+  api.get("/api/auth/getnotifications", {
+    params: {
+      page,
+      limit,
+    },
+  }),
   markAllNotificationsRead: () =>
     api.get("/api/auth/markallnotificationread"),
   markNotificationRead: (notificationId) =>
-    api.get("/api/auth/marknotificationread", { params: { notificationId } }),
+    api.get(`/api/auth/marknotificationread/${notificationId}`),
 };
 
 // ==================== CLIENT APIs ====================

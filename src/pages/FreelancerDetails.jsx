@@ -190,7 +190,7 @@ export default function FreelancerDetails() {
               <h2 className="text-2xl font-bold mb-4">Skills</h2>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                 {/* Placeholder skills - in real app these would come from DB */}
-                {["React", "Node.js", "MongoDB", "TypeScript", "Tailwind CSS", "REST APIs"].map(
+                { freelancer.FreelancerProfile.skills.map(
                   (skill, idx) => (
                     <div
                       key={idx}

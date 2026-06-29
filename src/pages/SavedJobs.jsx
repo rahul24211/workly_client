@@ -15,6 +15,11 @@ import { toast } from "react-toastify";
 export default function SavedJobs() {
   const [savedJobs, setSavedJobs] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [proposalJob, setProposalJob] = useState(null);
+  const [bidAmount, setBidAmount] = useState("");
+  const [deliveryDays, setDeliveryDays] = useState("");
+  const [coverLetter, setCoverLetter] = useState("");
+  const [submittingProposal, setSubmittingProposal] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -46,6 +51,51 @@ const fetchSavedJobs = async () => {
     );
   } finally {
     setLoading(false);
+  }
+};
+
+const handleUnsaveJob = async (jobId, e) => {
+  e.stopPropagation();
+  try {
+    await freelancerAPI.unsaveJob(jobId);
+    setSavedJobs((prev) => prev.filter((job) => job.id !== jobId));
+    toast.success("Job removed from saved");
+  } catch (error) {
+    toast.error(error.response?.data?.message || "Failed to remove saved job");
+  }
+};
+
+const handleSubmitProposal = async () => {
+  if (!bidAmount || !coverLetter || !deliveryDays) {
+    toast.error("Please fill in all fields");
+    return;
+  }
+
+  const days = parseInt(deliveryDays);
+  if (isNaN(days) || days < 1 || days > 365) {
+    toast.error("Delivery days must be between 1 and 365");
+    return;
+  }
+
+  try {
+    setSubmittingProposal(true);
+    await freelancerAPI.createProposal({
+      jobId: proposalJob.id,
+      bidAmount: parseFloat(bidAmount),
+      coverLetter,
+      deliveryDays: days,
+    });
+    toast.success("Proposal submitted successfully!");
+    navigate("/my-proposals");
+    setProposalJob(null);
+    setBidAmount("");
+    setCoverLetter("");
+    setDeliveryDays("");
+  } catch (error) {
+    console.error(error);
+    toast.error(error.response?.data?.message || "Failed to submit proposal");
+  } finally {
+    setSubmittingProposal(false);
   }
 };
 
@@ -155,16 +205,18 @@ const fetchSavedJobs = async () => {
                     {/* Action Buttons */}
                     <div className="flex flex-col gap-3 justify-between">
                       <button
-                        onClick={() => navigate(`/job/${job.id}`)}
+                        onClick={() => setProposalJob(job)}
                         className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-semibold transition flex items-center justify-center gap-2"
                       >
                         Submit Proposal <ChevronRight size={18} />
                       </button>
                       <button
-                        onClick={() => navigate("/browse-jobs")}
-                        className="px-6 py-3 border border-slate-300 hover:bg-slate-50 rounded-xl font-semibold transition"
+                        onClick={(e) => handleUnsaveJob(job.id, e)}
+                        className="px-6 py-3 border border-slate-300 hover:bg-slate-50 rounded-xl font-semibold transition flex items-center justify-center gap-2"
+                        title="Remove from saved"
                       >
-                        View All Jobs
+                        <Heart size={18} fill="#ef4444" color="#ef4444" />
+                        Unsave
                       </button>
                     </div>
                   </div>
@@ -174,6 +226,221 @@ const fetchSavedJobs = async () => {
           </div>
         )}
       </div>
+
+      {/* Proposal Modal */}
+      {proposalJob && (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+    <div className="w-full max-w-4xl max-h-[90vh] overflow-y-auto bg-white rounded-[28px] shadow-2xl">
+
+      {/* Header */}
+      <div className="relative bg-gradient-to-r from-indigo-600 via-violet-600 to-purple-600 px-8 py-8 text-white">
+
+        <button
+          onClick={() => setProposalJob(null)}
+          className="absolute top-5 right-5 w-10 h-10 rounded-full bg-white/20 hover:bg-white/30 transition flex items-center justify-center text-2xl"
+        >
+          ×
+        </button>
+
+        <p className="uppercase tracking-[4px] text-indigo-200 text-sm">
+          Submit Proposal
+        </p>
+
+        <h2 className="text-3xl font-bold mt-2">
+          {proposalJob.title}
+        </h2>
+
+        <p className="text-indigo-100 mt-2 max-w-2xl">
+          Write a compelling proposal that explains your experience,
+          approach and why you're the right freelancer for this project.
+        </p>
+
+      </div>
+
+      {/* Body */}
+      <div className="p-8 space-y-8">
+
+        {/* Project Info */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
+
+          <div className="rounded-2xl bg-indigo-50 p-5">
+            <p className="text-xs uppercase text-slate-500">
+              Budget
+            </p>
+
+            <h3 className="mt-2 text-xl font-bold text-indigo-700">
+              ₹{Number(proposalJob.budget).toLocaleString("en-IN")}
+            </h3>
+          </div>
+
+          <div className="rounded-2xl bg-green-50 p-5">
+            <p className="text-xs uppercase text-slate-500">
+              Duration
+            </p>
+
+            <h3 className="mt-2 font-bold text-green-700">
+              {proposalJob.duration}
+            </h3>
+          </div>
+
+          <div className="rounded-2xl bg-orange-50 p-5">
+            <p className="text-xs uppercase text-slate-500">
+              Experience
+            </p>
+
+            <h3 className="mt-2 font-bold text-orange-600">
+              {proposalJob.experienceLevel}
+            </h3>
+          </div>
+
+          <div className="rounded-2xl bg-sky-50 p-5">
+            <p className="text-xs uppercase text-slate-500">
+              Category
+            </p>
+
+            <h3 className="mt-2 font-bold text-sky-700">
+              {proposalJob.category}
+            </h3>
+          </div>
+
+        </div>
+
+        {/* Bid & Delivery */}
+        <div className="grid md:grid-cols-2 gap-6">
+
+          <div>
+
+            <label className="block font-semibold mb-2">
+              Your Bid Amount
+            </label>
+
+            <div className="relative">
+
+              <span className="absolute left-4 top-3 text-lg font-bold text-slate-500">
+                ₹
+              </span>
+
+              <input
+                type="number"
+                value={bidAmount}
+                onChange={(e) => setBidAmount(e.target.value)}
+                placeholder="Enter your bid"
+                className="w-full rounded-xl border border-slate-300 pl-10 pr-4 py-3 focus:ring-2 focus:ring-indigo-500 outline-none"
+              />
+
+            </div>
+
+          </div>
+
+          <div>
+
+            <label className="block font-semibold mb-2">
+              Delivery Days
+            </label>
+
+            <input
+              type="number"
+              min="1"
+              max="365"
+              value={deliveryDays}
+              onChange={(e) => setDeliveryDays(e.target.value)}
+              placeholder="e.g. 10"
+              className="w-full rounded-xl border border-slate-300 px-4 py-3 focus:ring-2 focus:ring-indigo-500 outline-none"
+            />
+
+          </div>
+
+        </div>
+
+        {/* Cover Letter */}
+        <div>
+
+          <div className="flex justify-between mb-2">
+
+            <label className="font-semibold">
+              Cover Letter
+            </label>
+
+            <span className="text-sm text-slate-500">
+              {coverLetter.length}/1000
+            </span>
+
+          </div>
+
+          <textarea
+            rows={8}
+            value={coverLetter}
+            onChange={(e) => setCoverLetter(e.target.value)}
+            placeholder="Hi, I have worked on similar projects before. Explain your experience, your development process, estimated timeline and why the client should hire you..."
+            className="w-full rounded-2xl border border-slate-300 p-5 resize-none outline-none focus:ring-2 focus:ring-indigo-500"
+          />
+
+          <p className="text-sm text-slate-500 mt-2">
+            A detailed proposal increases your chances of getting hired.
+          </p>
+
+        </div>
+
+        {/* Skills */}
+        {proposalJob.skills?.length > 0 && (
+
+          <div>
+
+            <h3 className="font-semibold mb-3">
+              Required Skills
+            </h3>
+
+            <div className="flex flex-wrap gap-2">
+
+              {proposalJob.skills.map((skill, index) => (
+
+                <span
+                  key={index}
+                  className="px-4 py-2 rounded-full bg-indigo-100 text-indigo-700 font-medium text-sm"
+                >
+                  {skill}
+                </span>
+
+              ))}
+
+            </div>
+
+          </div>
+
+        )}
+
+      </div>
+
+      {/* Footer */}
+      <div className="border-t bg-slate-50 px-8 py-6 flex justify-end gap-4">
+
+        <button
+          onClick={() => setProposalJob(null)}
+          className="px-8 py-3 rounded-xl border border-slate-300 hover:bg-white font-semibold transition"
+        >
+          Cancel
+        </button>
+
+        <button
+          onClick={handleSubmitProposal}
+          disabled={submittingProposal}
+          className="px-8 py-3 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white font-semibold transition disabled:opacity-50"
+        >
+          {submittingProposal ? (
+            <div className="flex items-center gap-2">
+              <Loader size={18} className="animate-spin" />
+              Submitting...
+            </div>
+          ) : (
+            "Submit Proposal"
+          )}
+        </button>
+
+      </div>
+
+    </div>
+  </div>
+)}
     </div>
   );
 }

@@ -1,216 +1,367 @@
-import { useState, useEffect } from "react";
+// src/pages/Notifications.jsx
+// @ts-nocheck
+
+import { useState, useEffect, useCallback } from "react";
 import { authAPI } from "../services/api";
 import {
-  Bell,
-  CheckCircle,
-  MessageCircle,
-  Briefcase,
-  Award,
-  Loader,
-  Check,
-  Mail,
+  Bell, CheckCircle, MessageCircle, Briefcase, Award,
+  Loader, Check, Mail, ChevronLeft, ChevronRight, Inbox,
+  RefreshCw,
 } from "lucide-react";
 import { toast } from "react-toastify";
 
+const LIMIT = 10;
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+const fmtTime = (d) => {
+  if (!d) return "";
+  const diff = Date.now() - new Date(d).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return "Just now";
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  const days = Math.floor(hrs / 24);
+  if (days < 7) return `${days}d ago`;
+  return new Date(d).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
+};
+
+const TYPE_MAP = {
+  Proposal:  { icon: Briefcase,     bg: "bg-blue-100",   text: "text-blue-600",   ring: "ring-blue-200"   },
+  Message:   { icon: MessageCircle, bg: "bg-violet-100", text: "text-violet-600", ring: "ring-violet-200" },
+  Review:    { icon: Award,         bg: "bg-amber-100",  text: "text-amber-600",  ring: "ring-amber-200"  },
+  Contract:  { icon: CheckCircle,   bg: "bg-green-100",  text: "text-green-600",  ring: "ring-green-200"  },
+  default:   { icon: Bell,          bg: "bg-slate-100",  text: "text-slate-500",  ring: "ring-slate-200"  },
+};
+
+const getType = (title = "") => {
+  const key = Object.keys(TYPE_MAP).find((k) => k !== "default" && title.includes(k));
+  return TYPE_MAP[key] || TYPE_MAP.default;
+};
+
+const initials = (name) =>
+  name ? name.split(" ").map((w) => w[0]).join("").toUpperCase().slice(0, 2) : "?";
+
+// ─── Notification Row ─────────────────────────────────────────────────────────
+function NotificationRow({ notification, onMarkRead, marking }) {
+  const type = getType(notification.title);
+  const Icon = type.icon;
+  const sender = notification.sender;
+  const isUnread = !notification.isRead;
+
+  return (
+    <div
+      className={`relative flex items-start gap-4 px-5 py-4 rounded-2xl border transition-all ${
+        isUnread
+          ? "bg-indigo-50/60 border-indigo-100"
+          : "bg-white border-slate-100"
+      }`}
+    >
+      {/* Unread dot */}
+      {isUnread && (
+        <span className="absolute top-4 right-4 w-2 h-2 rounded-full bg-indigo-500" />
+      )}
+
+      {/* Icon / Avatar */}
+      <div className="flex-shrink-0 relative">
+        {sender?.profile_image ? (
+          <img
+            src={`${import.meta.env.VITE_API_BASE_URL}${sender.profile_image}`}
+            alt={sender.name}
+            className="w-10 h-10 rounded-full object-cover"
+          />
+        ) : (
+          <div className={`w-10 h-10 rounded-full flex items-center justify-center ring-2 ring-offset-1 ${type.bg} ${type.text} ${type.ring}`}>
+            {sender ? (
+              <span className="text-xs font-bold">{initials(sender.name)}</span>
+            ) : (
+              <Icon size={18} />
+            )}
+          </div>
+        )}
+        {/* Type badge over avatar */}
+        <span className={`absolute -bottom-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center ${type.bg} ${type.text} ring-2 ring-white`}>
+          <Icon size={10} />
+        </span>
+      </div>
+
+      {/* Content */}
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2 flex-wrap">
+          <p className={`text-sm font-semibold ${isUnread ? "text-slate-900" : "text-slate-700"}`}>
+            {notification.title}
+          </p>
+        </div>
+        <p className="text-sm text-slate-500 mt-0.5 leading-relaxed">
+          {notification.message}
+        </p>
+        <p className="text-xs text-slate-400 mt-1.5">{fmtTime(notification.createdAt)}</p>
+      </div>
+
+      {/* Mark read button */}
+      {isUnread && (
+        <button
+          onClick={() => onMarkRead(notification.id)}
+          disabled={marking === notification.id}
+          title="Mark as read"
+          className="flex-shrink-0 w-8 h-8 rounded-xl bg-white border border-slate-200 hover:border-indigo-300 hover:bg-indigo-50 flex items-center justify-center text-slate-400 hover:text-indigo-600 transition disabled:opacity-50"
+        >
+          {marking === notification.id
+            ? <Loader size={13} className="animate-spin" />
+            : <Mail size={13} />
+          }
+        </button>
+      )}
+    </div>
+  );
+}
+
+// ─── Pagination ───────────────────────────────────────────────────────────────
+function Pagination({ page, totalPages, onPage }) {
+  if (totalPages <= 1) return null;
+  return (
+    <div className="flex items-center justify-center gap-2 mt-6">
+      <button
+        onClick={() => onPage(page - 1)}
+        disabled={page === 1}
+        className="w-9 h-9 rounded-xl border border-slate-200 bg-white flex items-center justify-center text-slate-500 hover:border-indigo-300 hover:text-indigo-600 disabled:opacity-40 disabled:cursor-not-allowed transition"
+      >
+        <ChevronLeft size={15} />
+      </button>
+
+      {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+        <button
+          key={p}
+          onClick={() => onPage(p)}
+          className={`w-9 h-9 rounded-xl text-sm font-semibold border transition ${
+            p === page
+              ? "bg-indigo-600 text-white border-indigo-600"
+              : "bg-white text-slate-600 border-slate-200 hover:border-indigo-300 hover:text-indigo-600"
+          }`}
+        >
+          {p}
+        </button>
+      ))}
+
+      <button
+        onClick={() => onPage(page + 1)}
+        disabled={page === totalPages}
+        className="w-9 h-9 rounded-xl border border-slate-200 bg-white flex items-center justify-center text-slate-500 hover:border-indigo-300 hover:text-indigo-600 disabled:opacity-40 disabled:cursor-not-allowed transition"
+      >
+        <ChevronRight size={15} />
+      </button>
+    </div>
+  );
+}
+
+// ─── Main Page ────────────────────────────────────────────────────────────────
 export default function Notifications() {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [filterRead, setFilterRead] = useState("all");
+  const [refreshing, setRefreshing] = useState(false);
+  const [filter, setFilter] = useState("all");
+  const [page, setPage] = useState(1);
+  const [pagination, setPagination] = useState({ total: 0, totalPages: 1 });
+  const [marking, setMarking] = useState(null); // id of notification being marked
+  const [markingAll, setMarkingAll] = useState(false);
 
-  useEffect(() => {
-    fetchNotifications();
-    // Refresh notifications every 30 seconds
-    const interval = setInterval(fetchNotifications, 30000);
-    return () => clearInterval(interval);
-  }, []);
-
-  const fetchNotifications = async () => {
+  const fetchNotifications = useCallback(async (p = page, silent = false) => {
     try {
-      const response = await authAPI.getNotifications();
-      const notificationsData = response.data.notifications || response.data.data || [];
-      setNotifications(notificationsData);
+      if (!silent) setLoading(true); else setRefreshing(true);
+      const response = await authAPI.getNotifications(p, LIMIT);
+      const data = response.data;
+      setNotifications(data.notifications || []);
+      setPagination(data.pagination || { total: 0, totalPages: 1 });
     } catch (error) {
       console.error(error);
-      if (!loading) {
-        // Only show error on refresh, not on initial load
-        toast.error("Failed to load notifications");
-      }
+      toast.error("Failed to load notifications");
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
-  };
+  }, [page]);
 
-  const handleMarkRead = async (notificationId) => {
+  useEffect(() => {
+    fetchNotifications(page);
+  }, [page]);
+
+  // Auto-refresh every 30s silently
+  useEffect(() => {
+    const interval = setInterval(() => fetchNotifications(page, true), 30000);
+    return () => clearInterval(interval);
+  }, [page, fetchNotifications]);
+
+  const handleMarkRead = async (id) => {
     try {
-      await authAPI.markNotificationRead(notificationId);
-      setNotifications(
-        notifications.map((n) =>
-          n.id === notificationId ? { ...n, isRead: true } : n
-        )
+      setMarking(id);
+      await authAPI.markNotificationRead(id);
+      setNotifications((prev) =>
+        prev.map((n) => (n.id === id ? { ...n, isRead: true } : n))
       );
-      toast.success("Marked as read");
-    } catch (error) {
-      console.error(error);
-      toast.error("Failed to mark notification as read");
+    } catch {
+      toast.error("Failed to mark as read");
+    } finally {
+      setMarking(null);
     }
   };
 
   const handleMarkAllRead = async () => {
     try {
+      setMarkingAll(true);
       await authAPI.markAllNotificationsRead();
-      setNotifications(notifications.map((n) => ({ ...n, isRead: true })));
+      setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
       toast.success("All notifications marked as read");
-    } catch (error) {
-      console.error(error);
-      toast.error("Failed to mark all notifications as read");
+    } catch {
+      toast.error("Failed to mark all as read");
+    } finally {
+      setMarkingAll(false);
     }
   };
 
-  const getNotificationIcon = (title) => {
-    if (title?.includes("Proposal")) return <Briefcase size={20} />;
-    if (title?.includes("Message")) return <MessageCircle size={20} />;
-    if (title?.includes("Review")) return <Award size={20} />;
-    if (title?.includes("Contract")) return <CheckCircle size={20} />;
-    return <Bell size={20} />;
+  const handlePageChange = (p) => {
+    setPage(p);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const getNotificationColor = (title) => {
-    if (title?.includes("Proposal")) return "bg-blue-100 text-blue-700";
-    if (title?.includes("Message")) return "bg-purple-100 text-purple-700";
-    if (title?.includes("Review")) return "bg-yellow-100 text-yellow-700";
-    if (title?.includes("Contract")) return "bg-green-100 text-green-700";
-    return "bg-slate-100 text-slate-700";
-  };
-
-  const filteredNotifications = notifications.filter((n) => {
-    if (filterRead === "unread") return !n.isRead;
-    if (filterRead === "read") return n.isRead;
+  // Client-side filter (read/unread) on current page data
+  const filtered = notifications.filter((n) => {
+    if (filter === "unread") return !n.isRead;
+    if (filter === "read") return n.isRead;
     return true;
   });
 
+  const unreadCount = notifications.filter((n) => !n.isRead).length;
+  const hasUnread = notifications.some((n) => !n.isRead);
+
+  const FILTERS = [
+    { id: "all",    label: "All" },
+    { id: "unread", label: "Unread" },
+    { id: "read",   label: "Read" },
+  ];
+
+  // ── Loading state ──
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-100 flex items-center justify-center">
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
         <div className="text-center">
-          <Loader className="w-12 h-12 animate-spin text-indigo-600 mx-auto" />
-          <p className="mt-4 text-slate-600">Loading notifications...</p>
+          <Loader className="w-10 h-10 animate-spin text-indigo-500 mx-auto" />
+          <p className="mt-3 text-sm text-slate-500">Loading notifications...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-100 py-8 px-4">
-      <div className="max-w-3xl mx-auto">
+    <div className="min-h-screen bg-slate-50 py-8 px-4">
+      <div className="max-w-6xl mx-auto">
+
         {/* Header */}
-        <div className="mb-8 flex justify-between items-center">
+        <div className="flex items-start justify-between mb-6 gap-4">
           <div>
-            <h1 className="text-4xl font-bold text-slate-900">Notifications</h1>
-            <p className="text-slate-600 mt-2">
-              {notifications.filter((n) => !n.isRead).length} unread
-            </p>
-          </div>
-
-          {notifications.some((n) => !n.isRead) && (
-            <button
-              onClick={handleMarkAllRead}
-              className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-semibold transition flex items-center gap-2"
-            >
-              <Check size={18} />
-              Mark All Read
-            </button>
-          )}
-        </div>
-
-        {/* Filters */}
-        <div className="bg-white rounded-2xl shadow-lg p-6 mb-8 flex gap-4 flex-wrap">
-          {["all", "unread", "read"].map((filter) => (
-            <button
-              key={filter}
-              onClick={() => setFilterRead(filter)}
-              className={`px-4 py-2 rounded-lg font-medium transition capitalize ${
-                filterRead === filter
-                  ? "bg-indigo-600 text-white"
-                  : "bg-slate-100 text-slate-700 hover:bg-slate-200"
-              }`}
-            >
-              {filter}
-              {filter !== "all" && (
-                <span className="ml-2">
-                  (
-                  {
-                    notifications.filter((n) =>
-                      filter === "unread" ? !n.isRead : n.isRead
-                    ).length
-                  }
-                  )
+            <h1 className="text-2xl font-semibold text-slate-900">Notifications</h1>
+            <p className="text-sm text-slate-500 mt-0.5">
+              {pagination.total} total
+              {unreadCount > 0 && (
+                <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-indigo-100 text-indigo-700">
+                  {unreadCount} unread
                 </span>
               )}
-            </button>
-          ))}
-        </div>
-
-        {/* Notifications List */}
-        {filteredNotifications.length === 0 ? (
-          <div className="bg-white rounded-2xl shadow-lg p-12 text-center">
-            <Bell className="w-16 h-16 text-slate-300 mx-auto mb-4" />
-            <p className="text-xl text-slate-500">
-              {filterRead === "unread"
-                ? "No unread notifications"
-                : "No notifications"}
             </p>
           </div>
-        ) : (
-          <div className="space-y-3">
-            {filteredNotifications.map((notification) => (
-              <div
-                key={notification.id}
-                className={`rounded-2xl shadow-md p-6 transition ${
-                  notification.isRead
-                    ? "bg-white"
-                    : "bg-indigo-50 border-l-4 border-indigo-600"
+
+          <div className="flex items-center gap-2">
+            {/* Refresh button */}
+            <button
+              onClick={() => fetchNotifications(page, true)}
+              disabled={refreshing}
+              className="w-9 h-9 rounded-xl border border-slate-200 bg-white flex items-center justify-center text-slate-400 hover:text-indigo-600 hover:border-indigo-200 transition disabled:opacity-50"
+              title="Refresh"
+            >
+              <RefreshCw size={14} className={refreshing ? "animate-spin" : ""} />
+            </button>
+
+            {/* Mark all read */}
+            {hasUnread && (
+              <button
+                onClick={handleMarkAllRead}
+                disabled={markingAll}
+                className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold transition disabled:opacity-60"
+              >
+                {markingAll
+                  ? <Loader size={13} className="animate-spin" />
+                  : <Check size={13} />
+                }
+                Mark all read
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Filter tabs */}
+        <div className="flex gap-1 bg-white border border-slate-200 rounded-xl p-1 mb-5">
+          {FILTERS.map(({ id, label }) => {
+            const count = id === "all"
+              ? notifications.length
+              : notifications.filter((n) => id === "unread" ? !n.isRead : n.isRead).length;
+            return (
+              <button
+                key={id}
+                onClick={() => setFilter(id)}
+                className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-sm font-medium transition ${
+                  filter === id
+                    ? "bg-indigo-600 text-white shadow-sm"
+                    : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
                 }`}
               >
-                <div className="flex items-start gap-4">
-                  {/* Icon */}
-                  <div
-                    className={`p-3 rounded-lg flex-shrink-0 ${getNotificationColor(
-                      notification.title
-                    )}`}
-                  >
-                    {getNotificationIcon(notification.title)}
-                  </div>
+                {label}
+                <span className={`text-xs px-1.5 py-0.5 rounded-full font-semibold ${
+                  filter === id ? "bg-white/20 text-white" : "bg-slate-100 text-slate-500"
+                }`}>
+                  {count}
+                </span>
+              </button>
+            );
+          })}
+        </div>
 
-                  {/* Content */}
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-bold text-slate-900">
-                      {notification.title}
-                    </h3>
-                    <p className="text-slate-600 mt-1">
-                      {notification.message}
-                    </p>
-                    <p className="text-xs text-slate-500 mt-2">
-                      {new Date(notification.createdAt).toLocaleString()}
-                    </p>
-                  </div>
-
-                  {/* Actions */}
-                  <div className="flex-shrink-0 flex gap-2">
-                    {!notification.isRead && (
-                      <button
-                        onClick={() => handleMarkRead(notification.id)}
-                        className="p-2 hover:bg-slate-100 rounded-lg transition"
-                        title="Mark as read"
-                      >
-                        <Mail size={18} className="text-indigo-600" />
-                      </button>
-                    )}
-                  </div>
-                </div>
-              </div>
+        {/* List */}
+        {filtered.length === 0 ? (
+          <div className="bg-white rounded-2xl border border-slate-100 py-16 text-center">
+            <div className="w-14 h-14 rounded-2xl bg-slate-100 flex items-center justify-center mx-auto mb-4">
+              <Inbox size={24} className="text-slate-400" />
+            </div>
+            <p className="text-slate-500 text-sm font-medium">
+              {filter === "unread" ? "No unread notifications" : "No notifications yet"}
+            </p>
+            {filter !== "all" && (
+              <button
+                onClick={() => setFilter("all")}
+                className="mt-3 text-xs text-indigo-600 font-semibold hover:underline"
+              >
+                View all
+              </button>
+            )}
+          </div>
+        ) : (
+          <div className="flex flex-col gap-2">
+            {filtered.map((n) => (
+              <NotificationRow
+                key={n.id}
+                notification={n}
+                onMarkRead={handleMarkRead}
+                marking={marking}
+              />
             ))}
           </div>
         )}
+
+        {/* Pagination */}
+        <Pagination
+          page={page}
+          totalPages={pagination.totalPages}
+          onPage={handlePageChange}
+        />
+
       </div>
     </div>
   );

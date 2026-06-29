@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { authAPI, clientAPI } from "../services/api";
 import {
   Loader, X, Zap, Clock, CheckCircle2,
-  Coins, CalendarCheck, Paperclip, AlertCircle, MapPin, User,
+  Coins, CalendarCheck, Paperclip, AlertCircle, MapPin, User, Star,
 } from "lucide-react";
 import { toast } from "react-toastify";
 
@@ -39,8 +39,146 @@ function StatusBadge({ status }) {
   );
 }
 
+// ─── Star Rating ──────────────────────────────────────────────────────────────
+function StarRating({ value, onChange }) {
+  const [hovered, setHovered] = useState(0);
+
+  return (
+    <div className="flex items-center gap-1">
+      {[1, 2, 3, 4, 5].map((star) => (
+        <button
+          key={star}
+          type="button"
+          onClick={() => onChange(star)}
+          onMouseEnter={() => setHovered(star)}
+          onMouseLeave={() => setHovered(0)}
+          className="transition-transform hover:scale-110 focus:outline-none"
+        >
+          <Star
+            size={28}
+            className={`transition-colors ${
+              star <= (hovered || value)
+                ? "fill-amber-400 text-amber-400"
+                : "fill-slate-100 text-slate-300"
+            }`}
+          />
+        </button>
+      ))}
+    </div>
+  );
+}
+
+// ─── Review Modal ─────────────────────────────────────────────────────────────
+function ReviewModal({ contract, onClose, onSubmit, submitting }) {
+  const [rating, setRating] = useState(0);
+  const [review, setReview] = useState("");
+
+  const handleSubmit = () => {
+    if (!rating) return toast.error("Please select a rating");
+    if (!review.trim()) return toast.error("Please write a review");
+    onSubmit({ contractId: contract.id, rating, review: review.trim() });
+  };
+
+  const ratingLabels = ["", "Poor", "Below average", "Average", "Good", "Excellent"];
+
+  return (
+    <div
+      className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+      onClick={onClose}
+    >
+      <div
+        className="bg-white w-full max-w-md rounded-2xl border border-slate-200 overflow-hidden shadow-xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="px-7 py-5 border-b border-slate-100 flex justify-between items-start gap-3">
+          <div>
+            <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-md bg-green-50 text-green-700 mb-2">
+              <CheckCircle2 size={11} /> Contract completed
+            </span>
+            <h2 className="text-lg font-semibold text-slate-900 leading-snug">
+              Leave a review
+            </h2>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Share your experience working with {contract.freelancer?.name?.split(" ")[0]}
+            </p>
+          </div>
+          <button
+            onClick={onClose}
+            className="w-9 h-9 rounded-full bg-slate-50 border border-slate-200 hover:bg-slate-100 flex items-center justify-center text-slate-500 flex-shrink-0 transition"
+          >
+            <X size={15} />
+          </button>
+        </div>
+
+        {/* Body */}
+        <div className="px-7 py-5">
+          {/* Freelancer row */}
+          <div className="flex items-center gap-3 pb-5 mb-5 border-b border-slate-100">
+            <div className="w-10 h-10 rounded-full bg-indigo-100 text-indigo-600 font-semibold text-sm flex items-center justify-center flex-shrink-0">
+              {initials(contract.freelancer?.name)}
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-slate-900">{contract.freelancer?.name}</p>
+              <p className="text-xs text-slate-500">{contract.Job?.title}</p>
+            </div>
+          </div>
+
+          {/* Rating */}
+          <div className="mb-5">
+            <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-3">
+              Overall rating
+            </p>
+            <div className="flex items-center gap-3">
+              <StarRating value={rating} onChange={setRating} />
+              {rating > 0 && (
+                <span className="text-sm font-semibold text-amber-600">
+                  {ratingLabels[rating]}
+                </span>
+              )}
+            </div>
+          </div>
+
+          {/* Review text */}
+          <div className="mb-1">
+            <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-2">
+              Your review
+            </p>
+            <textarea
+              value={review}
+              onChange={(e) => setReview(e.target.value)}
+              placeholder="Describe the quality of work, communication, and overall experience..."
+              rows={4}
+              className="w-full text-sm text-slate-700 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 resize-none focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent placeholder:text-slate-400 leading-relaxed transition"
+            />
+            <p className="text-xs text-slate-400 mt-1 text-right">{review.length} chars</p>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="px-7 py-4 border-t border-slate-100 bg-slate-50 flex gap-3">
+          <button
+            onClick={onClose}
+            className="flex-1 h-10 rounded-xl border border-slate-200 bg-white text-slate-600 text-sm font-medium hover:bg-slate-50 transition flex items-center justify-center gap-1.5"
+          >
+            Skip for now
+          </button>
+          <button
+            onClick={handleSubmit}
+            disabled={submitting || !rating || !review.trim()}
+            className="flex-1 h-10 rounded-xl bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-semibold transition flex items-center justify-center gap-1.5"
+          >
+            <Star size={13} />
+            {submitting ? "Submitting..." : "Submit review"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Contract Card ────────────────────────────────────────────────────────────
-function ContractCard({ contract, onOpen, onMarkComplete, marking }) {
+function ContractCard({ contract, onOpen, onMarkComplete, marking, onAddReview }) {
   return (
     <div
       onClick={() => onOpen(contract)}
@@ -50,7 +188,6 @@ function ContractCard({ contract, onOpen, onMarkComplete, marking }) {
       <img className="w-11 h-11 rounded-full bg-indigo-100 text-indigo-600 font-semibold text-sm flex items-center justify-center flex-shrink-0"
       src={`${import.meta.env.VITE_API_BASE_URL}${contract.freelancer.profile_image}`}
       />
-        
 
       {/* Info */}
       <div className="flex-1 min-w-0">
@@ -94,14 +231,24 @@ function ContractCard({ contract, onOpen, onMarkComplete, marking }) {
             {marking ? "Processing..." : "Mark complete"}
           </button>
         )}
+        {contract.status === "COMPLETED" && !contract.hasReview && (
+          <button
+            onClick={(e) => { e.stopPropagation(); onAddReview(contract); }}
+            className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-white transition flex items-center gap-1"
+          >
+            <Star size={12} />
+            Add review
+          </button>
+        )}
       </div>
     </div>
   );
 }
 
 // ─── Modal ────────────────────────────────────────────────────────────────────
-function ContractModal({ contract, onClose, onMarkComplete, marking }) {
+function ContractModal({ contract, onClose, onMarkComplete, marking, onAddReview }) {
   const isSubmitted = contract.status?.toUpperCase() === "WORK_SUBMITTED";
+  const isCompleted = contract.status?.toUpperCase() === "COMPLETED";
 
   return (
     <div
@@ -244,6 +391,15 @@ function ContractModal({ contract, onClose, onMarkComplete, marking }) {
               {marking ? "Processing..." : "Mark as complete"}
             </button>
           )}
+          {isCompleted && !contract.hasReview && (
+            <button
+              onClick={() => { onClose(); setTimeout(() => onAddReview(contract), 150); }}
+              className="flex-1 h-10 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold transition flex items-center justify-center gap-1.5"
+            >
+              <Star size={14} />
+              Add review
+            </button>
+          )}
         </div>
       </div>
     </div>
@@ -257,6 +413,8 @@ export default function ClientContracts() {
   const [activeTab, setActiveTab] = useState("active");
   const [selectedContract, setSelectedContract] = useState(null);
   const [marking, setMarking] = useState(false);
+  const [reviewContract, setReviewContract] = useState(null);
+  const [submittingReview, setSubmittingReview] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => { fetchContracts(); }, []);
@@ -279,11 +437,30 @@ export default function ClientContracts() {
       await clientAPI.completeContract(contractId);
       toast.success("Contract marked as complete!");
       await fetchContracts();
+      // Find the just-completed contract to prompt for review
+      const completed = contracts.find((c) => c.id === contractId);
       setSelectedContract(null);
+      if (completed) {
+        // Small delay so success toast is visible first
+        setTimeout(() => setReviewContract({ ...completed, status: "COMPLETED" }), 400);
+      }
     } catch (error) {
       toast.error(error.response?.data?.message || "Failed to complete contract");
     } finally {
       setMarking(false);
+    }
+  };
+
+  const handleSubmitReview = async ({ contractId, rating, review }) => {
+    try {
+      setSubmittingReview(true);
+      await clientAPI.createReview({ contractId, rating, review });
+      toast.success("Review submitted — thank you!");
+      setReviewContract(null);
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to submit review");
+    } finally {
+      setSubmittingReview(false);
     }
   };
 
@@ -362,19 +539,31 @@ export default function ClientContracts() {
                 onOpen={setSelectedContract}
                 onMarkComplete={handleMarkComplete}
                 marking={marking}
+                onAddReview={setReviewContract}
               />
             ))}
           </div>
         )}
       </div>
 
-      {/* Modal */}
+      {/* Contract detail modal */}
       {selectedContract && (
         <ContractModal
           contract={selectedContract}
           onClose={() => setSelectedContract(null)}
           onMarkComplete={handleMarkComplete}
           marking={marking}
+          onAddReview={setReviewContract}
+        />
+      )}
+
+      {/* Review modal — shown after contract is marked complete */}
+      {reviewContract && (
+        <ReviewModal
+          contract={reviewContract}
+          onClose={() => setReviewContract(null)}
+          onSubmit={handleSubmitReview}
+          submitting={submittingReview}
         />
       )}
     </div>

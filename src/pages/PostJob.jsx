@@ -4,7 +4,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import {
   Briefcase, AlignLeft, LayoutGrid, Tag,
-   Lock, Clock, Star, Calendar, Send, X,
+  Lock, Clock, Star, Calendar, Send, X,
 } from "lucide-react";
 import { toast } from "react-toastify";
 
@@ -24,7 +24,7 @@ const EXP_LEVELS = [
 function SectionLabel({ icon: Icon, children }) {
   return (
     <div className="flex items-center gap-2 mb-4">
-    
+
       <span className="text-xs font-semibold text-slate-400 uppercase tracking-widest">
         {children}
       </span>
@@ -46,7 +46,7 @@ function Field({ label, hint, children }) {
 function InputWrap({ icon: Icon, children }) {
   return (
     <div className="relative">
-      
+
       {children}
     </div>
   );
@@ -84,48 +84,48 @@ export default function PostJob() {
 
   const removeSkill = (s) => setSkills(skills.filter((x) => x !== s));
 
- const handleSubmit = async (e) => {
-  e.preventDefault();
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-  if (skills.length === 0) {
-    console.log("2. No Skills");
-    toast.error("Add at least one skill");
-    return;
-  }
+    if (skills.length === 0) {
+      console.log("2. No Skills");
+      toast.error("Add at least one skill");
+      return;
+    }
 
-  const token = localStorage.getItem("token");
+    const token = localStorage.getItem("token");
 
 
-  const payload = {
-    ...formData,
-    skills,
-    budget: Number(formData.budget),
+    const payload = {
+      ...formData,
+      skills,
+      budget: Number(formData.budget),
+    };
+
+
+    try {
+      setLoading(true);
+
+
+      const response = await axios.post(
+        `${import.meta.env.VITE_API_BASE_URL}/api/client/createjobs`,
+        payload,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      toast.success("Job posted successfully!");
+      navigate("/MyJobs");
+    } catch (err) {
+      console.log("7. Error:", err);
+      toast.error(err.response?.data?.message || "Failed");
+    } finally {
+      setLoading(false);
+    }
   };
-
-
-  try {
-    setLoading(true);
-
-
-    const response = await axios.post(
-      `${import.meta.env.VITE_API_BASE_URL}/api/client/createjobs`,
-      payload,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
-
-    toast.success("Job posted successfully!");
-    navigate("/MyJobs");
-  } catch (err) {
-    console.log("7. Error:", err);
-    toast.error(err.response?.data?.message || "Failed");
-  } finally {
-    setLoading(false);
-  }
-};
 
   return (
     <div className="min-h-screen bg-slate-50 py-10 px-4">
@@ -174,13 +174,14 @@ export default function PostJob() {
 
                 <Field label="Category">
                   <InputWrap icon={LayoutGrid}>
-                    <select
-                      name="category" value={formData.category} onChange={handleChange}
+                    <input
+                      name="category"
+                      value={formData.category}
+                      onChange={handleChange}
+                      
+                      placeholder="e.g. web Development"
                       required className={`${inputCls} h-11 pl-9 pr-4`}
-                    >
-                      <option value="">Select a category</option>
-                      {CATEGORIES.map((c) => <option key={c}>{c}</option>)}
-                    </select>
+                    />
                   </InputWrap>
                 </Field>
               </div>
@@ -246,16 +247,14 @@ export default function PostJob() {
                       <button
                         key={value} type="button"
                         onClick={() => setFormData({ ...formData, experienceLevel: value })}
-                        className={`py-2.5 rounded-xl text-sm border transition text-center ${
-                          formData.experienceLevel === value
+                        className={`py-2.5 rounded-xl text-sm border transition text-center ${formData.experienceLevel === value
                             ? "bg-indigo-50 border-indigo-200 text-indigo-600 font-semibold"
                             : "bg-slate-50 border-slate-200 text-slate-500 hover:border-slate-300"
-                        }`}
+                          }`}
                       >
                         {label}
-                        <span className={`block text-xs mt-0.5 font-normal ${
-                          formData.experienceLevel === value ? "text-indigo-400" : "text-slate-400"
-                        }`}>
+                        <span className={`block text-xs mt-0.5 font-normal ${formData.experienceLevel === value ? "text-indigo-400" : "text-slate-400"
+                          }`}>
                           {sub}
                         </span>
                       </button>
