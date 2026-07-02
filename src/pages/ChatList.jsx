@@ -136,7 +136,7 @@ export default function ChatList() {
                     {/* Avatar */}
                     <div className="relative flex-shrink-0">
                       <img
-                        src={otherUser.profile_image || "https://via.placeholder.com/48"}
+                        src={`${import.meta.env.VITE_API_BASE_URL}${otherUser.profile_image}` || "https://via.placeholder.com/48"}
                         alt={otherUser.name}
                         className="w-12 h-12 rounded-full object-cover"
                       />

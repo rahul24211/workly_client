@@ -33,15 +33,17 @@ export const ProfileCompletionGuard = ({ children }) => {
   }
 
   // Profile not completed
-  if (!user.profile_completed) {
-    const role = user.role?.toLowerCase() || "freelancer";
-    return (
-      <Navigate
-        to={`/create-profile?role=${role}`}
-        replace
-      />
-    );
-  }
+  // Skip profile completion check for ADMIN
+if (user.role !== "ADMIN" && !user.profile_completed) {
+  const role = user.role?.toLowerCase() || "freelancer";
+
+  return (
+    <Navigate
+      to={`/create-profile?role=${role}`}
+      replace
+    />
+  );
+}
 
   return children;
 };
@@ -91,15 +93,17 @@ export const ProtectedRouteWithProfileCheck = ({
   }
 
   // Profile not completed - redirect to profile completion
-  if (!user.profile_completed) {
-    const userRole = user.role?.toLowerCase() || "freelancer";
-    return (
-      <Navigate
-        to={`/create-profile?role=${userRole}`}
-        replace
-      />
-    );
-  }
+ // Skip profile completion check for ADMIN
+if (user.role !== "ADMIN" && !user.profile_completed) {
+  const userRole = user.role?.toLowerCase() || "freelancer";
+
+  return (
+    <Navigate
+      to={`/create-profile?role=${userRole}`}
+      replace
+    />
+  );
+}
 
   // All checks passed - render protected content
   return children;

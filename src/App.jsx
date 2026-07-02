@@ -1,4 +1,6 @@
 import { Routes, Route } from "react-router-dom";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 import Home from "./components/Home";
 import Navbar from "./components/Navbar";
@@ -40,6 +42,18 @@ function App() {
   return (
     <>
       <Navbar />
+      <ToastContainer
+        position="bottom-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={true}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
 
       <Routes>
         {/* Public Routes */}
@@ -243,11 +257,13 @@ const CreateProfileRouter = () => {
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const role = user.role?.toLowerCase() || "freelancer";
 
-  if (role === "client") {
-    return <CreateClientProfile />;
-  } else {
-    return <CreateFreelancerProfile />;
-  }
+ if (role === "client") {
+  return <CreateClientProfile />;
+} else if (role === "freelancer") {
+  return <CreateFreelancerProfile />;
+} else if (role === "admin") {
+  return <AdminDashboard />;
+}
 };
 
 export default App;
