@@ -1,17 +1,12 @@
 // src/pages/PostJob.jsx
-import { useState } from "react";
-import axios from "axios";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Briefcase, AlignLeft, LayoutGrid, Tag,
   Lock, Clock, Star, Calendar, Send, X,
 } from "lucide-react";
 import { toast } from "react-toastify";
-
-const CATEGORIES = [
-  "Web Development", "Mobile Development", "UI/UX Design",
-  "Graphic Design", "Content Writing",
-];
+import { clientAPI } from "../services/api";
 
 const DURATIONS = ["1 Week", "2 Weeks", "1 Month", "3 Months", "6 Months"];
 
@@ -60,6 +55,7 @@ export default function PostJob() {
   const [loading, setLoading] = useState(false);
   const [skillInput, setSkillInput] = useState("");
   const [skills, setSkills] = useState([]);
+  const [categories, setCategories] = useState([]);
 
   const [formData, setFormData] = useState({
     title: "",
@@ -84,6 +80,21 @@ export default function PostJob() {
 
   const removeSkill = (s) => setSkills(skills.filter((x) => x !== s));
 
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await clientAPI.getCategories();
+        if (response.data.success) {
+          setCategories(response.data.categories);
+        }
+      } catch (error) {
+        console.error("Failed to load categories:", error);
+        toast.error("Unable to load job categories. Please refresh.");
+      }
+    };
+    fetchCategories();
+  }, []);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -93,8 +104,12 @@ export default function PostJob() {
       return;
     }
 
-    const token = localStorage.getItem("token");
+    if (!formData.category) {
+      toast.error("Please select a category");
+      return;
+    }
 
+    const token = localStorage.getItem("token");
 
     const payload = {
       ...formData,
@@ -107,15 +122,7 @@ export default function PostJob() {
       setLoading(true);
 
 
-      const response = await axios.post(
-        `${import.meta.env.VITE_API_BASE_URL}/api/client/createjobs`,
-        payload,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const response = await clientAPI.createJob(payload); 
 
       toast.success("Job posted successfully!");
       navigate("/MyJobs");
@@ -173,16 +180,23 @@ export default function PostJob() {
                 </Field>
 
                 <Field label="Category">
-                  <InputWrap icon={LayoutGrid}>
-                    <input
+                  <div className="relative">
+                    <LayoutGrid size={16} className="pointer-events-none absolute left-3 top-3 text-slate-400" />
+                    <select
                       name="category"
                       value={formData.category}
                       onChange={handleChange}
-                      
-                      placeholder="e.g. web Development"
-                      required className={`${inputCls} h-11 pl-9 pr-4`}
-                    />
-                  </InputWrap>
+                      required
+                      className={`${inputCls} h-11 pl-9 pr-4 appearance-none bg-white`}
+                    >
+                      <option value="">Select a category</option>
+                      {categories.map((category) => (
+                        <option key={category.id} value={category.title}>
+                          {category.title}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </Field>
               </div>
 

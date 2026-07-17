@@ -14,9 +14,17 @@ import {
   Clock,
   AlertCircle,
   Star,
+  LayoutDashboard,
+  FileText,
+  MessageSquareText,
+  UserCircle2,
+  Settings,
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { clientAPI } from "../services/api";
+import CurvedSidebar from "../components/CurvedSidebar";
+import { useAuth } from "../context/AuthContext";
+import { LogOut } from "lucide-react";
 
 export default function ClientDashboard() {
   const [dashboardData, setDashboardData] = useState(null);
@@ -24,6 +32,8 @@ export default function ClientDashboard() {
   const [error, setError] = useState(null);
   const [selectedContract, setSelectedContract] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const navigate = useNavigate();
+  const { logout } = useAuth();
 
   const handleViewDetails = (contract) => {
     setSelectedContract(contract);
@@ -51,9 +61,9 @@ export default function ClientDashboard() {
 
   if (loading) {
     return (
-      <div className="bg-slate-50 min-h-screen flex items-center justify-center">
+      <div className="flex min-h-screen items-center justify-center bg-slate-50">
         <div className="text-center">
-          <div className="animate-spin inline-block w-12 h-12 border-4 border-indigo-200 border-t-indigo-600 rounded-full mb-4"></div>
+          <div className="mb-4 inline-block h-12 w-12 animate-spin rounded-full border-4 border-indigo-200 border-t-indigo-600"></div>
           <p className="text-gray-600">Loading dashboard...</p>
         </div>
       </div>
@@ -62,13 +72,13 @@ export default function ClientDashboard() {
 
   if (error) {
     return (
-      <div className="bg-slate-50 min-h-screen flex items-center justify-center">
-        <div className="bg-red-50 border border-red-200 rounded-xl p-6 max-w-md">
-          <AlertCircle className="text-red-600 mb-2" />
+      <div className="flex min-h-screen items-center justify-center bg-slate-50">
+        <div className="max-w-md rounded-xl border border-red-200 bg-red-50 p-6">
+          <AlertCircle className="mb-2 text-red-600" />
           <p className="text-red-800">{error}</p>
           <button
             onClick={fetchDashboardData}
-            className="mt-4 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700"
+            className="mt-4 rounded-lg bg-red-600 px-4 py-2 text-white hover:bg-red-700"
           >
             Retry
           </button>
@@ -83,377 +93,261 @@ export default function ClientDashboard() {
   const topFreelancers = dashboardData?.topFreelancers || [];
 
   const StatCard = ({ icon: Icon, label, value, subtext, color = "blue" }) => (
-    <div className={`bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-lg transition`}>
+    <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm transition hover:shadow-lg">
       <div className="flex items-start justify-between">
         <div>
-          <p className="text-gray-600 text-sm font-medium">{label}</p>
-          <p className={`text-3xl font-bold mt-2 text-${color}-600`}>{value}</p>
-          {subtext && <p className="text-xs text-gray-500 mt-1">{subtext}</p>}
+          <p className="text-sm font-medium text-gray-600">{label}</p>
+          <p className={`mt-2 text-3xl font-bold text-${color}-600`}>{value}</p>
+          {subtext && <p className="mt-1 text-xs text-gray-500">{subtext}</p>}
         </div>
         <Icon className={`text-${color}-600`} size={32} />
       </div>
     </div>
   );
 
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
+  };
+
+  const sidebarLinks = [
+    { to: "/clientDashboard", label: "Dashboard", icon: LayoutDashboard },
+    { to: "/PostJob", label: "Post Job", icon: FileText },
+    { to: "/MyJobs", label: "My Jobs", icon: Briefcase },
+    { to: "/my-contracts", label: "My Contracts", icon: Briefcase },
+    { to: "/freelancers", label: "Find Freelancers", icon: Search },
+    { to: "/chat", label: "Messages", icon: MessageSquareText },
+    { to: "/client-profile", label: "Profile", icon: UserCircle2 },
+    { to: "/settings", label: "Settings", icon: Settings },
+  ];
+
   return (
-    <div className="bg-slate-50 min-h-screen">
-      {/* Header Section */}
-      <section className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-16">
-        <div className="max-w-7xl mx-auto px-6">
-          <h1 className="text-4xl font-bold mb-2">Client Dashboard</h1>
-          <p className="text-indigo-100">Manage your projects, contracts, and team</p>
-        </div>
-      </section>
+    <div className="min-h-screen bg-slate-50 px-4 py-6 lg:px-6">
+      <div className="mx-auto flex max-w-9xl flex-col gap-6 lg:flex-row">
+        <CurvedSidebar
+          title="Client Hub"
+          subtitle="Client Menu"
+          links={sidebarLinks}
+          footerAction={{ label: "Logout", icon: LogOut, onClick: handleLogout }}
+        />
 
-      {/* Statistics Grid */}
-      <section className="max-w-7xl mx-auto px-6 py-12">
-        <h2 className="text-2xl font-bold mb-6">Overview</h2>
-        <div className="grid md:grid-cols-2 lg:grid-cols-6 gap-4">
-          <StatCard
-            icon={Briefcase}
-            label="Total Jobs"
-            value={stats.totalJobs || 0}
-            color="blue"
-          />
-          <StatCard
-            icon={Clock}
-            label="Open Jobs"
-            value={stats.openJobs || 0}
-            color="yellow"
-          />
-          <StatCard
-            icon={Users}
-            label="Active Contracts"
-            value={stats.activeContracts || 0}
-            color="green"
-          />
-          <StatCard
-            icon={CheckCircle}
-            label="Completed"
-            value={stats.completedJobs || 0}
-            color="emerald"
-          />
-          <StatCard
-            icon={TrendingUp}
-            label="Finished Contracts"
-            value={stats.completedContracts || 0}
-            color="purple"
-          />
-          <StatCard
-            icon={DollarSign}
-            label="Total Spent"
-            value={`₹${stats.totalSpent?.toLocaleString("en-IN") || 0}`}
-            color="indigo"
-          />
-        </div>
-      </section>
+        <div className="flex-1">
+          <section className="rounded-[32px] bg-gradient-to-r from-indigo-600 to-purple-600 px-8 py-12 text-white shadow-[0_20px_60px_-20px_rgba(15,23,42,0.35)]">
+            <div className="max-w-5xl">
+              <h1 className="mb-2 text-4xl font-bold">Client Dashboard</h1>
+              <p className="text-indigo-100">Manage your projects, contracts, and team</p>
+            </div>
+          </section>
 
-      {/* Active Contracts */}
-      <section className="max-w-7xl mx-auto px-6 py-12">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold">Active Contracts</h2>
-          <Link
-            to="/my-contracts"
-            className="text-indigo-600 hover:text-indigo-700 font-semibold"
-          >
-            View All →
-          </Link>
-        </div>
+          <section className="py-8">
+            <h2 className="mb-6 text-2xl font-bold">Overview</h2>
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-6">
+              <StatCard icon={Briefcase} label="Total Jobs" value={stats.totalJobs || 0} color="blue" />
+              <StatCard icon={Clock} label="Open Jobs" value={stats.openJobs || 0} color="yellow" />
+              <StatCard icon={Users} label="Active Contracts" value={stats.activeContracts || 0} color="green" />
+              <StatCard icon={CheckCircle} label="Completed" value={stats.completedJobs || 0} color="emerald" />
+              <StatCard icon={TrendingUp} label="Finished Contracts" value={stats.completedContracts || 0} color="purple" />
+              <StatCard icon={DollarSign} label="Total Spent" value={`₹${stats.totalSpent?.toLocaleString("en-IN") || 0}`} color="indigo" />
+            </div>
+          </section>
 
-        {activeContracts.length > 0 ? (
-          <div className="grid md:grid-cols-2 gap-6">
-            {activeContracts.map((contract) => (
-              <div
-                key={contract.id}
-                className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-lg transition"
-              >
-                <div className="flex justify-between items-start mb-4">
+          <section className="pb-6">
+            <div className="mb-6 flex items-center justify-between">
+              <h2 className="text-2xl font-bold">Active Contracts</h2>
+              <Link to="/my-contracts" className="font-semibold text-indigo-600 hover:text-indigo-700">
+                View All →
+              </Link>
+            </div>
+
+            {activeContracts.length > 0 ? (
+              <div className="grid gap-6 md:grid-cols-2">
+                {activeContracts.map((contract) => (
+                  <div key={contract.id} className="rounded-[24px] border border-gray-100 bg-white p-6 shadow-sm transition hover:shadow-lg">
+                    <div className="mb-4 flex items-start justify-between">
+                      <div>
+                        <h3 className="text-lg font-bold">{contract.freelancer.name}</h3>
+                        <p className="text-sm text-gray-600">{contract.freelancer.title}</p>
+                      </div>
+                      <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-bold text-green-700">
+                        {contract.status}
+                      </span>
+                    </div>
+
+                    <div className="space-y-3">
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Amount:</span>
+                        <span className="font-bold text-indigo-600">₹{contract.amount?.toLocaleString("en-IN")}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Due Date:</span>
+                        <span className="text-sm">
+                          {contract.dueDate ? new Date(contract.dueDate).toLocaleDateString("en-IN") : "N/A"}
+                        </span>
+                      </div>
+                    </div>
+
+                    <button
+                      onClick={() => handleViewDetails(contract)}
+                      className="mt-4 w-full rounded-[16px] bg-indigo-600 py-2 text-white transition hover:bg-indigo-700"
+                    >
+                      View Details
+                    </button>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="rounded-[24px] border border-gray-100 bg-white p-12 text-center">
+                <Briefcase size={48} className="mx-auto mb-4 text-gray-400" />
+                <p className="mb-4 text-gray-600">No active contracts yet</p>
+                <Link to="/BrowseJobs" className="inline-block rounded-[16px] bg-indigo-600 px-6 py-3 text-white transition hover:bg-indigo-700">
+                  Find Freelancers
+                </Link>
+              </div>
+            )}
+          </section>
+
+          <section className="pb-6">
+            <h2 className="mb-6 text-2xl font-bold">Recent Proposals</h2>
+
+            {recentProposals.length > 0 ? (
+              <div className="space-y-4">
+                {recentProposals.map((proposal) => (
+                  <div key={proposal.id} className="rounded-[24px] border border-gray-100 bg-white p-6 shadow-sm transition hover:shadow-lg">
+                    <div className="mb-3 flex items-start justify-between">
+                      <div className="flex-1">
+                        <h3 className="text-lg font-bold">{proposal.jobTitle}</h3>
+                        <p className="text-gray-600">From: {proposal.freelancer.name}</p>
+                      </div>
+                      <span className={`rounded-full px-3 py-1 text-xs font-bold ${proposal.status === "PENDING" ? "bg-yellow-100 text-yellow-700" : proposal.status === "ACCEPTED" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
+                        {proposal.status}
+                      </span>
+                    </div>
+
+                    <p className="mb-3 text-sm text-gray-600">{proposal.coverLetter?.substring(0, 100)}...</p>
+
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-indigo-600">₹{proposal.bidAmount?.toLocaleString("en-IN")}</span>
+                      <p className="text-xs text-gray-500">{new Date(proposal.createdAt).toLocaleDateString("en-IN")}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="rounded-2xl border border-gray-100 bg-white p-12 text-center">
+                <AlertCircle size={48} className="mx-auto mb-4 text-gray-400" />
+                <p className="text-gray-600">No proposals received yet</p>
+              </div>
+            )}
+          </section>
+
+          <section className="pb-6">
+            <h2 className="mb-6 text-2xl font-bold">Your Top Freelancers</h2>
+
+            {topFreelancers.length > 0 ? (
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+                {topFreelancers.map((freelancer) => (
+                  <div key={freelancer.id} className="rounded-2xl border border-slate-200 bg-white p-6 text-center shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-xl">
+                    <div className="mx-auto mb-4 h-20 w-20 overflow-hidden rounded-full border-4 border-indigo-100">
+                      <img
+                        src={freelancer.profile_image ? `${import.meta.env.VITE_API_BASE_URL}${freelancer.profile_image}` : "/default-avatar.png"}
+                        alt={freelancer.name}
+                        className="h-full w-full object-cover"
+                      />
+                    </div>
+                    <h3 className="text-lg font-bold text-slate-800">{freelancer.name}</h3>
+                    <p className="mt-1 line-clamp-1 text-sm text-slate-500">{freelancer.title}</p>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="rounded-2xl border border-gray-100 bg-white p-12 text-center">
+                <Users size={48} className="mx-auto mb-4 text-gray-400" />
+                <p className="text-gray-600">No freelancers worked with yet</p>
+              </div>
+            )}
+          </section>
+
+          <section className="pb-6">
+            <h2 className="mb-6 text-2xl font-bold">Quick Actions</h2>
+            <div className="grid gap-6 md:grid-cols-3">
+              <Link to="/PostJob" className="rounded-2xl border border-gray-100 bg-white p-8 text-center shadow-sm transition hover:shadow-lg">
+                <Briefcase className="mx-auto mb-4 text-indigo-600" size={40} />
+                <h3 className="text-lg font-bold">Post a Job</h3>
+                <p className="mt-2 text-sm text-gray-600">Create a new job posting and find talent</p>
+              </Link>
+              <Link to="/freelancers" className="rounded-2xl border border-gray-100 bg-white p-8 text-center shadow-sm transition hover:shadow-lg">
+                <Search className="mx-auto mb-4 text-green-600" size={40} />
+                <h3 className="text-lg font-bold">Browse Freelancers</h3>
+                <p className="mt-2 text-sm text-gray-600">Discover and hire top talent</p>
+              </Link>
+              <Link to="/MyJobs" className="rounded-2xl border border-gray-100 bg-white p-8 text-center shadow-sm transition hover:shadow-lg">
+                <TrendingUp className="mx-auto mb-4 text-purple-600" size={40} />
+                <h3 className="text-lg font-bold">My Jobs</h3>
+                <p className="mt-2 text-sm text-gray-600">Manage and track your job postings</p>
+              </Link>
+            </div>
+          </section>
+
+          {showModal && selectedContract && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+              <div className="w-full max-w-2xl overflow-hidden rounded-3xl bg-white shadow-2xl">
+                <div className="flex items-center justify-between bg-indigo-600 p-6 text-white">
                   <div>
-                    <h3 className="font-bold text-lg">
-                      {contract.freelancer.name}
-                    </h3>
-                    <p className="text-gray-600 text-sm">
-                      {contract.freelancer.title}
-                    </p>
+                    <h2 className="text-2xl font-bold">{selectedContract.freelancer.name}</h2>
+                    <p className="text-indigo-100">{selectedContract.freelancer.title}</p>
                   </div>
-                  <span className="bg-green-100 text-green-700 text-xs font-bold px-3 py-1 rounded-full">
-                    {contract.status}
-                  </span>
+                  <button onClick={() => setShowModal(false)} className="text-3xl transition hover:rotate-90">
+                    ×
+                  </button>
                 </div>
 
-                <div className="space-y-3">
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Amount:</span>
-                    <span className="font-bold text-indigo-600">
-                      ₹{contract.amount?.toLocaleString("en-IN")}
-                    </span>
+                <div className="space-y-5 p-6">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="rounded-xl bg-slate-50 p-4">
+                      <p className="text-sm text-gray-500">Contract Amount</p>
+                      <p className="text-xl font-bold text-indigo-600">₹{selectedContract.amount?.toLocaleString("en-IN")}</p>
+                    </div>
+                    <div className="rounded-xl bg-slate-50 p-4">
+                      <p className="text-sm text-gray-500">Status</p>
+                      <span className="mt-1 inline-block rounded-full bg-green-100 px-3 py-1 font-semibold text-green-700">
+                        {selectedContract.status}
+                      </span>
+                    </div>
+                    <div className="rounded-xl bg-slate-50 p-4">
+                      <p className="text-sm text-gray-500">Start Date</p>
+                      <p>{selectedContract.startDate ? new Date(selectedContract.startDate).toLocaleDateString("en-IN") : "N/A"}</p>
+                    </div>
+                    <div className="rounded-xl bg-slate-50 p-4">
+                      <p className="text-sm text-gray-500">Due Date</p>
+                      <p>{selectedContract.dueDate ? new Date(selectedContract.dueDate).toLocaleDateString("en-IN") : "N/A"}</p>
+                    </div>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Due Date:</span>
-                    <span className="text-sm">
-                      {contract.dueDate
-                        ? new Date(contract.dueDate).toLocaleDateString("en-IN")
-                        : "N/A"}
-                    </span>
-                  </div>
+
+                  {selectedContract.job?.title && (
+                    <div className="rounded-xl bg-indigo-50 p-4">
+                      <p className="text-sm text-gray-500">Job Title</p>
+                      <h3 className="text-lg font-bold">{selectedContract.job.title}</h3>
+                    </div>
+                  )}
+
+                  {selectedContract.description && (
+                    <div>
+                      <h4 className="mb-2 font-semibold">Description</h4>
+                      <p className="leading-7 text-gray-600">{selectedContract.description}</p>
+                    </div>
+                  )}
                 </div>
 
-                <button
-                  onClick={() => handleViewDetails(contract)}
-                  className="mt-4 w-full bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition"
-                >
-                  View Details
-                </button>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="bg-white p-12 rounded-2xl text-center border border-gray-100">
-            <Briefcase size={48} className="mx-auto text-gray-400 mb-4" />
-            <p className="text-gray-600 mb-4">No active contracts yet</p>
-            <Link
-              to="/BrowseJobs"
-              className="inline-block bg-indigo-600 text-white px-6 py-3 rounded-xl hover:bg-indigo-700 transition"
-            >
-              Find Freelancers
-            </Link>
-          </div>
-        )}
-      </section>
-
-      {/* Recent Proposals */}
-      <section className="max-w-7xl mx-auto px-6 py-12">
-        <h2 className="text-2xl font-bold mb-6">Recent Proposals</h2>
-
-        {recentProposals.length > 0 ? (
-          <div className="space-y-4">
-            {recentProposals.map((proposal) => (
-              <div
-                key={proposal.id}
-                className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-lg transition"
-              >
-                <div className="flex justify-between items-start mb-3">
-                  <div className="flex-1">
-                    <h3 className="font-bold text-lg">{proposal.jobTitle}</h3>
-                    <p className="text-gray-600">
-                      From: {proposal.freelancer.name}
-                    </p>
-                  </div>
-                  <span
-                    className={`text-xs font-bold px-3 py-1 rounded-full ${proposal.status === "PENDING"
-                      ? "bg-yellow-100 text-yellow-700"
-                      : proposal.status === "ACCEPTED"
-                        ? "bg-green-100 text-green-700"
-                        : "bg-red-100 text-red-700"
-                      }`}
-                  >
-                    {proposal.status}
-                  </span>
-                </div>
-
-                <p className="text-gray-600 text-sm mb-3">
-                  {proposal.coverLetter?.substring(0, 100)}...
-                </p>
-
-                <div className="flex justify-between items-center">
-                  <span className="font-bold text-indigo-600">
-                    ₹{proposal.bidAmount?.toLocaleString("en-IN")}
-                  </span>
-                  <p className="text-xs text-gray-500">
-                    {new Date(proposal.createdAt).toLocaleDateString("en-IN")}
-                  </p>
+                <div className="flex justify-end border-t p-5">
+                  <button onClick={() => setShowModal(false)} className="rounded-xl bg-gray-200 px-6 py-2 hover:bg-gray-300">
+                    Close
+                  </button>
                 </div>
               </div>
-            ))}
-          </div>
-        ) : (
-          <div className="bg-white p-12 rounded-2xl text-center border border-gray-100">
-            <AlertCircle size={48} className="mx-auto text-gray-400 mb-4" />
-            <p className="text-gray-600">No proposals received yet</p>
-          </div>
-        )}
-      </section>
-
-      {/* Top Freelancers */}
-      <section className="max-w-7xl mx-auto px-6 py-12">
-        <h2 className="text-2xl font-bold mb-6">Your Top Freelancers</h2>
-
-        {topFreelancers.length > 0 ? (
-          <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-4">
-            {topFreelancers.map((freelancer) => (
-              <div
-                key={freelancer.id}
-                className="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 p-6 text-center"
-              >
-                {/* Profile Image */}
-                <div className="w-20 h-20 mx-auto mb-4 overflow-hidden rounded-full border-4 border-indigo-100">
-                  <img
-                    src={
-                      freelancer.profile_image
-                        ? `${import.meta.env.VITE_API_BASE_URL}${freelancer.profile_image}`
-                        : "/default-avatar.png"
-                    }
-                    alt={freelancer.name}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-
-                {/* Name */}
-                <h3 className="text-lg font-bold text-slate-800">
-                  {freelancer.name}
-                </h3>
-
-                {/* Title */}
-                <p className="text-sm text-slate-500 mt-1 line-clamp-1">
-                  {freelancer.title}
-                </p>
-
-                {/* Rating */}
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="bg-white p-12 rounded-2xl text-center border border-gray-100">
-            <Users size={48} className="mx-auto text-gray-400 mb-4" />
-            <p className="text-gray-600">No freelancers worked with yet</p>
-          </div>
-        )}
-      </section>
-
-      {/* Quick Actions */}
-      <section className="max-w-7xl mx-auto px-6 py-12">
-        <h2 className="text-2xl font-bold mb-6">Quick Actions</h2>
-
-        <div className="grid md:grid-cols-3 gap-6">
-          <Link
-            to="/PostJob"
-            className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 hover:shadow-lg transition text-center"
-          >
-            <Briefcase className="mx-auto text-indigo-600 mb-4" size={40} />
-            <h3 className="font-bold text-lg">Post a Job</h3>
-            <p className="text-gray-600 text-sm mt-2">
-              Create a new job posting and find talent
-            </p>
-          </Link>
-
-          <Link
-            to="/freelancers"
-            className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 hover:shadow-lg transition text-center"
-          >
-            <Search className="mx-auto text-green-600 mb-4" size={40} />
-            <h3 className="font-bold text-lg">Browse Freelancers</h3>
-            <p className="text-gray-600 text-sm mt-2">
-              Discover and hire top talent
-            </p>
-          </Link>
-
-          <Link
-            to="/MyJobs"
-            className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 hover:shadow-lg transition text-center"
-          >
-            <TrendingUp className="mx-auto text-purple-600 mb-4" size={40} />
-            <h3 className="font-bold text-lg">My Jobs</h3>
-            <p className="text-gray-600 text-sm mt-2">
-              Manage and track your job postings
-            </p>
-          </Link>
+            </div>
+          )}
         </div>
-      </section>
-
-      {showModal && selectedContract && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-300">
-
-            {/* Header */}
-            <div className="bg-indigo-600 text-white p-6 flex justify-between items-center">
-              <div>
-                <h2 className="text-2xl font-bold">
-                  {selectedContract.freelancer.name}
-                </h2>
-                <p className="text-indigo-100">
-                  {selectedContract.freelancer.title}
-                </p>
-              </div>
-
-              <button
-                onClick={() => setShowModal(false)}
-                className="text-3xl hover:rotate-90 transition"
-              >
-                ×
-              </button>
-            </div>
-
-            {/* Body */}
-            <div className="p-6 space-y-5">
-
-              <div className="grid grid-cols-2 gap-4">
-
-                <div className="bg-slate-50 rounded-xl p-4">
-                  <p className="text-gray-500 text-sm">Contract Amount</p>
-                  <p className="text-xl font-bold text-indigo-600">
-                    ₹{selectedContract.amount?.toLocaleString("en-IN")}
-                  </p>
-                </div>
-
-                <div className="bg-slate-50 rounded-xl p-4">
-                  <p className="text-gray-500 text-sm">Status</p>
-                  <span className="inline-block mt-1 px-3 py-1 bg-green-100 text-green-700 rounded-full font-semibold">
-                    {selectedContract.status}
-                  </span>
-                </div>
-
-                <div className="bg-slate-50 rounded-xl p-4">
-                  <p className="text-gray-500 text-sm">Start Date</p>
-                  <p>
-                    {selectedContract.startDate
-                      ? new Date(selectedContract.startDate).toLocaleDateString("en-IN")
-                      : "N/A"}
-                  </p>
-                </div>
-
-                <div className="bg-slate-50 rounded-xl p-4">
-                  <p className="text-gray-500 text-sm">Due Date</p>
-                  <p>
-                    {selectedContract.dueDate
-                      ? new Date(selectedContract.dueDate).toLocaleDateString("en-IN")
-                      : "N/A"}
-                  </p>
-                </div>
-
-              </div>
-
-              {selectedContract.job?.title && (
-                <div className="bg-indigo-50 rounded-xl p-4">
-                  <p className="text-sm text-gray-500">Job Title</p>
-                  <h3 className="font-bold text-lg">
-                    {selectedContract.job.title}
-                  </h3>
-                </div>
-              )}
-
-              {selectedContract.description && (
-                <div>
-                  <h4 className="font-semibold mb-2">Description</h4>
-                  <p className="text-gray-600 leading-7">
-                    {selectedContract.description}
-                  </p>
-                </div>
-              )}
-            </div>
-
-            {/* Footer */}
-            <div className="border-t p-5 flex justify-end">
-              <button
-                onClick={() => setShowModal(false)}
-                className="px-6 py-2 rounded-xl bg-gray-200 hover:bg-gray-300"
-              >
-                Close
-              </button>
-            </div>
-
-          </div>
-        </div>
-      )}
+      </div>
     </div>
   );
 }

@@ -24,6 +24,12 @@ const CreateFreelancerProfile = () => {
   const [newSkill, setNewSkill] = useState("");
   const [newLanguage, setNewLanguage] = useState("");
   const [newPortfolioLink, setNewPortfolioLink] = useState("");
+  const [documents, setDocuments] = useState({
+    aadhaarFront: null,
+    aadhaarBack: null,
+    panFront: null,
+    panBack: null,
+  });
 
   const [formData, setFormData] = useState({
     headline: "",
@@ -95,18 +101,13 @@ const CreateFreelancerProfile = () => {
         toast.error("Image must be less than 5MB");
         return;
       }
-
       if (!file.type.startsWith("image/")) {
         toast.error("Please select an image file");
         return;
       }
-
       setProfileImage(file);
-
       const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result);
-      };
+      reader.onloadend = () => setImagePreview(reader.result);
       reader.readAsDataURL(file);
     }
   };
@@ -175,6 +176,20 @@ const CreateFreelancerProfile = () => {
     }));
   };
 
+  const handleDocumentChange = (e, field) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("File must be less than 5MB");
+      return;
+    }
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please select an image file");
+      return;
+    }
+    setDocuments((prev) => ({ ...prev, [field]: file }));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -219,10 +234,11 @@ const CreateFreelancerProfile = () => {
         data.append("portfolioLinks", JSON.stringify(formData.portfolioLinks));
       }
 
-      // Add image if selected
-      if (profileImage) {
-        data.append("profileImage", profileImage);
-      }
+      if (profileImage) data.append("profileImage", profileImage);
+      if (documents.aadhaarFront) data.append("aadhaarFront", documents.aadhaarFront);
+      if (documents.aadhaarBack) data.append("aadhaarBack", documents.aadhaarBack);
+      if (documents.panFront) data.append("panFront", documents.panFront);
+      if (documents.panBack) data.append("panBack", documents.panBack);
 
       console.log("[handleSubmit] Sending request to:", `${API_BASE_URL}/api/profile/complete-freelancer-profile`);
       const response = await axios.post(
@@ -237,9 +253,9 @@ const CreateFreelancerProfile = () => {
       );
 
       if (response.data.success) {
-        toast.success("Profile completed successfully!");
+        toast.success("Profile submitted! Awaiting admin approval.");
 
-        // Update user state with new profile_completed status
+        // Update user state with new profile_completed and approval_status
         const updatedUserData = response.data.data.user;
 
         // Update both localStorage and context
@@ -249,9 +265,9 @@ const CreateFreelancerProfile = () => {
         // Dispatch authChange event to sync all listeners
         window.dispatchEvent(new Event("authChange"));
 
-        // Wait a moment for state to update, then redirect
+        // Redirect to approval pending page
         setTimeout(() => {
-          navigate("/FreelancerDashboard", { replace: true });
+          navigate("/approval-pending", { replace: true });
         }, 500);
       }
     } catch (error) {
@@ -700,6 +716,42 @@ const CreateFreelancerProfile = () => {
                   ))}
                 </div>
               )}
+            </div>
+
+            {/* KYC Documents */}
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-3">
+                KYC Documents
+              </label>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {[
+                  { field: "aadhaarFront", label: "Aadhaar Card (Front)" },
+                  { field: "aadhaarBack", label: "Aadhaar Card (Back)" },
+                  { field: "panFront", label: "PAN Card (Front)" },
+                  { field: "panBack", label: "PAN Card (Back)" },
+                ].map(({ field, label }) => (
+                  <div key={field}>
+                    <label className="block text-xs text-slate-600 mb-1">{label}</label>
+                    <label
+                      htmlFor={field}
+                      className="flex items-center gap-2 px-3 py-2 border border-dashed border-slate-300 rounded-lg cursor-pointer hover:border-emerald-500 transition text-sm text-slate-500"
+                    >
+                      <input
+                        type="file"
+                        id={field}
+                        accept="image/*"
+                        onChange={(e) => handleDocumentChange(e, field)}
+                        className="hidden"
+                      />
+                      {documents[field] ? (
+                        <span className="text-emerald-600 truncate">{documents[field].name}</span>
+                      ) : (
+                        <span>Click to upload</span>
+                      )}
+                    </label>
+                  </div>
+                ))}
+              </div>
             </div>
 
             {/* Submit Button */}

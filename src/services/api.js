@@ -76,26 +76,6 @@ export const authAPI = {
     api.get(`/api/auth/marknotificationread/${notificationId}`),
 };
 
-// ==================== CLIENT APIs ====================
-export const clientAPI = {
-  createJob: (data) => api.post("/api/client/createjobs", data),
-  getMyJobs: () => api.get("/api/client/getmyjobs"),
-  getJobProposals: (jobId) =>
-    api.get("/api/client/getjobproposals", { params: { jobId } }),
-  getJobProposalById: (proposalId) =>
-    api.get("/api/client/getjobproposalsbyid", { params: { proposalId } }),
-  updateProposalStatus: (data) =>
-    api.patch("/api/client/updateproposalstatus", data),
-  completeContract: (contractId) =>
-    api.patch(`/api/client/completecontract?id=${contractId}`),
-  createReview: (data) => api.post("/api/client/createReview", data),
-  getFreelancers: (search = "") =>
-    api.get("/api/client/getfreelincers", { params: { search } }),
-  getFreelancerById: (freelancerId) =>
-    api.get("/api/client/getfreelincerbyid", { params: { freelancerId } }),
-  getClientDashboard: () => api.get("/api/client/dashboard"),
-};
-
 // ==================== FREELANCER APIs ====================
 export const freelancerAPI = {
   getJobs: () => api.get("/api/freelancer/getjobs"),
@@ -131,7 +111,41 @@ export const freelancerAPI = {
     api.post("/api/freelancer/notifications/mark-all-read"),
 };
 
-// ==================== CHAT APIs ====================
+// ==================== ADMIN APIs ====================
+export const adminAPI = {
+  getDashboard: () => api.get("/api/admin/admindashboard"),
+  getAllUsers: () => api.get("/api/admin/getallusers"),
+  getPendingFreelancers: () => api.get("/api/admin/pending-freelancers"),
+  updateFreelancerApproval: (id, status) =>
+    api.patch(`/api/admin/freelancer-approval/${id}`, { status }),
+  updateUserStatus: (id, status) =>
+    api.get(`/api/admin/updateuserstatus?id=${id}`, { params: { status } }),
+  getCategories: () => api.get("/api/admin/categories"),
+  createCategory: (data) => api.post("/api/admin/categories", data),
+  updateCategory: (id, data) => api.put(`/api/admin/categories/${id}`, data),
+  deleteCategory: (id) => api.delete(`/api/admin/categories/${id}`),
+};
+
+export const clientAPI = {
+  createJob: (data) => api.post("/api/client/createjobs", data),
+  getMyJobs: () => api.get("/api/client/getmyjobs"),
+  getJobProposals: (jobId) =>
+    api.get("/api/client/getjobproposals", { params: { jobId } }),
+  getJobProposalById: (proposalId) =>
+    api.get("/api/client/getjobproposalsbyid", { params: { proposalId } }),
+  updateProposalStatus: (data) => api.patch("/api/client/updateproposalstatus", data),
+  completeContract: (contractId) =>
+    api.patch(`/api/client/completecontract?id=${contractId}`),
+  createReview: (data) => api.post("/api/client/createReview", data),
+  getFreelancers: (search = "") =>
+    api.get("/api/client/getfreelincers", { params: { search } }),
+  getFreelancerById: (freelancerId) =>
+    api.get("/api/client/getfreelincerbyid", { params: { freelancerId } }),
+  getClientDashboard: () => api.get("/api/client/dashboard"),
+  getCategories: () => api.get("/api/client/categories"),
+};
+
+// ==================== FREELANCER APIs ====================
 export const chatAPI = {
   startConversation: (contractId) =>
     api.post("/api/chat/start", { contractId }),

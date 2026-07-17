@@ -8,6 +8,12 @@ import Navbar from "./components/Navbar";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import RegisterWithOTP from "./pages/RegisterWithOTP";
+import ApprovalPending from "./pages/ApprovalPending";
+import ApprovalRejected from "./pages/ApprovalRejected";
+import AdminFreelancerApprovals from "./pages/AdminFreelancerApprovals";
+import AdminDashboard from "./pages/AdminDashboard";
+import AdminFreelancerDetail from "./pages/AdminFreelancerDetail";
+import AdminCategoryManagement from "./pages/AdminCategoryManagement";
 
 // Client Pages
 import ClientDashboard from "./pages/ClientDashboard";
@@ -18,7 +24,8 @@ import ProposalDetails from "./pages/ProposalDetails";
 import FreelancersList from "./pages/FreelancersList";
 import FreelancerDetails from "./pages/FreelancerDetails";
 import CreateClientProfile from "./pages/CreateClientProfile";
-import ClientProfilePage from "./pages/ClientProfilePage"
+import ClientProfilePage from "./pages/ClientProfilePage";
+import AdminProfile from "./pages/AdminProfile";
 
 // Freelancer Pages
 import BrowseJobs from "./pages/BrowseJobs";
@@ -61,6 +68,24 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/register-with-otp" element={<RegisterWithOTP />} />
+        <Route path="/approval-pending" element={<ApprovalPending />} />
+        <Route path="/approval-rejected" element={<ApprovalRejected />} />
+        <Route
+          path="/admin/freelancer-approvals"
+          element={
+            <ProtectedRoute role="ADMIN">
+              <AdminFreelancerApprovals />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/approval-pending"
+          element={
+            <ProtectedRoute>
+              <ApprovalPending />
+            </ProtectedRoute>
+          }
+        />
 
         {/* Profile Completion Routes (Protected but allow incomplete profiles) */}
         <Route
@@ -104,6 +129,40 @@ function App() {
           element={
             <ProtectedRoute role="FREELANCER">
               <FreelancerDashboard />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/adminDashboard"
+          element={
+            <ProtectedRoute role="ADMIN">
+              <AdminDashboard />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route          path="/admin/categories"
+          element={
+            <ProtectedRoute role="ADMIN">
+              <AdminCategoryManagement />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route          path="/admin/freelancer/:freelancerId"
+          element={
+            <ProtectedRoute role="ADMIN">
+              <AdminFreelancerDetail />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/admin-profile"
+          element={
+            <ProtectedRoute role="ADMIN">
+              <AdminProfile />
             </ProtectedRoute>
           }
         />
