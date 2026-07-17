@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { authAPI } from "../services/api";
 
-export default function AdminProfile() {
+export default function AdminProfile({ embedded = false }) {
   const { user } = useAuth();
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -53,9 +53,9 @@ export default function AdminProfile() {
   }
 
   return (
-    <div className="bg-slate-50 min-h-screen py-12">
-      <div className="max-w-4xl mx-auto px-6">
-        <div className="bg-white rounded-3xl shadow-xl border border-slate-200 overflow-hidden">
+    <div className={`bg-slate-50 ${embedded ? "min-h-0 py-0" : "min-h-screen py-12"}`}>
+      <div className={`mx-auto ${embedded ? "max-w-full" : "max-w-4xl px-6"}`}>
+        <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-xl">
           <div className="bg-gradient-to-r from-slate-900 via-indigo-700 to-sky-700 p-8 text-white">
             <h1 className="text-3xl font-bold">Admin Profile</h1>
             <p className="mt-2 text-slate-200">Review your account and contact details.</p>

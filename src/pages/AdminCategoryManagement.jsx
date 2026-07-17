@@ -15,6 +15,24 @@ import {
   Briefcase,
   Feather,
   Layers,
+  Globe,
+  Monitor,
+  Camera,
+  Shield,
+  Cpu,
+  Database,
+  Wrench,
+  Headphones,
+  ShoppingCart,
+  GraduationCap,
+  Building2,
+  Users,
+  Rocket,
+  MessageSquareText,
+  Workflow,
+  BadgeCheck,
+  Sparkles,
+  AppWindow,
 } from "lucide-react";
 import AdminSidebar from "../components/AdminSidebar";
 import { adminAPI } from "../services/api";
@@ -31,6 +49,51 @@ const ICON_OPTIONS = [
   "Briefcase",
   "Feather",
   "Layers",
+  "Globe",
+  "Monitor",
+  "Camera",
+  "Shield",
+  "Cpu",
+  "Database",
+  "Wrench",
+  "Headphones",
+  "ShoppingCart",
+  "GraduationCap",
+  "Building2",
+  "Users",
+  "Rocket",
+  "MessageSquareText",
+  "Workflow",
+  "BadgeCheck",
+  "Sparkles",
+  "AppWindow",
+];
+
+const CATEGORY_OPTIONS = [
+  "Web Development",
+  "Mobile Development",
+  "UI/UX Design",
+  "Graphic Design",
+  "Content Writing",
+  "Copywriting",
+  "Marketing",
+  "SEO",
+  "Video Editing",
+  "Photography",
+  "Data Science",
+  "AI Automation",
+  "Project Management",
+  "Customer Support",
+  "Human Resources",
+  "Sales",
+  "Accounting",
+  "Legal Services",
+  "Translation",
+  "Admin Support",
+  "E-commerce",
+  "Product Management",
+  "Research",
+  "Testing",
 ];
 
 const iconMap = {
@@ -44,6 +107,24 @@ const iconMap = {
   Briefcase,
   Feather,
   Layers,
+  Globe,
+  Monitor,
+  Camera,
+  Shield,
+  Cpu,
+  Database,
+  Wrench,
+  Headphones,
+  ShoppingCart,
+  GraduationCap,
+  Building2,
+  Users,
+  Rocket,
+  MessageSquareText,
+  Workflow,
+  BadgeCheck,
+  Sparkles,
+  AppWindow,
 };
 
 function CategoryIcon({ iconName }) {
@@ -51,7 +132,7 @@ function CategoryIcon({ iconName }) {
   return <Icon size={20} />;
 }
 
-export default function AdminCategoryManagement() {
+export default function AdminCategoryManagement({ embedded = false }) {
   const navigate = useNavigate();
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -78,29 +159,51 @@ export default function AdminCategoryManagement() {
     }
   };
 
-  const handleSave = async () => {
-    if (!form.title.trim() || !form.icon) {
-      toast.error("Please provide a category title and icon.");
-      return;
+  const saveCategory = async (values = form) => {
+    if (!values.title?.trim() || !values.icon) {
+      toast.error("Please select a category and icon first.");
+      return false;
     }
 
     try {
       setSaving(true);
       if (editing) {
-        await adminAPI.updateCategory(editing.id, form);
+        await adminAPI.updateCategory(editing.id, values);
         toast.success("Category updated");
       } else {
-        await adminAPI.createCategory(form);
+        await adminAPI.createCategory(values);
         toast.success("Category added");
       }
       setForm({ title: "", icon: ICON_OPTIONS[0], description: "" });
       setEditing(null);
       await fetchCategories();
+      return true;
     } catch (error) {
       console.error(error);
       toast.error(error.response?.data?.message || "Unable to save category");
+      return false;
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleSave = async () => {
+    await saveCategory(form);
+  };
+
+  const handleSelectCategory = async (title) => {
+    const nextForm = { ...form, title };
+    setForm(nextForm);
+    if (!editing && nextForm.icon) {
+      await saveCategory(nextForm);
+    }
+  };
+
+  const handleSelectIcon = async (iconName) => {
+    const nextForm = { ...form, icon: iconName };
+    setForm(nextForm);
+    if (!editing && nextForm.title?.trim()) {
+      await saveCategory(nextForm);
     }
   };
 
@@ -123,9 +226,9 @@ export default function AdminCategoryManagement() {
 const title = editing ? "Edit Category" : "Add New Category";
 
   return (
-    <div className="min-h-screen bg-slate-50 py-8 px-4">
-      <div className="max-w-7xl mx-auto grid gap-6 lg:grid-cols-[280px_1fr]">
-        <AdminSidebar />
+    <div className={`bg-slate-50 ${embedded ? "min-h-0 py-0" : "min-h-screen py-8 px-4"}`}>
+      <div className={embedded ? "mx-auto" : "max-w-7xl mx-auto grid gap-6 lg:grid-cols-[280px_1fr]"}>
+        {!embedded && <AdminSidebar />}
 
         <main className="space-y-6">
           <div className="flex flex-col gap-4 rounded-3xl bg-white p-6 shadow-sm border border-slate-200">
@@ -155,12 +258,37 @@ const title = editing ? "Edit Category" : "Add New Category";
                       value={form.title}
                       onChange={(e) => setForm({ ...form, title: e.target.value })}
                       className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none focus:border-indigo-300 focus:bg-white"
-                      placeholder="e.g. Content Writer"
+                      placeholder="Select a preset or type a category"
                     />
                   </div>
+
+                  <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                    <div className="mb-3 flex items-center justify-between">
+                      <p className="text-sm font-semibold text-slate-700">Quick category options</p>
+                      <span className="text-xs font-medium text-slate-500">{CATEGORY_OPTIONS.length} presets</span>
+                    </div>
+                    <div className="flex max-h-48 flex-wrap gap-2 overflow-y-auto pr-1">
+                      {CATEGORY_OPTIONS.map((category) => {
+                        const selected = form.title === category;
+                        return (
+                          <button
+                            key={category}
+                            type="button"
+                            onClick={() => handleSelectCategory(category)}
+                            className={`rounded-full border px-3 py-2 text-sm transition ${
+                              selected ? "border-indigo-500 bg-indigo-600 text-white" : "border-slate-200 bg-white text-slate-700 hover:border-indigo-300"
+                            }`}
+                          >
+                            {category}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-2">Icon</label>
-                    <div className="grid grid-cols-5 gap-2">
+                    <div className="grid grid-cols-4 gap-2 sm:grid-cols-6 xl:grid-cols-8">
                       {ICON_OPTIONS.map((iconName) => {
                         const Icon = iconMap[iconName];
                         const selected = form.icon === iconName;
@@ -168,12 +296,13 @@ const title = editing ? "Edit Category" : "Add New Category";
                           <button
                             key={iconName}
                             type="button"
-                            onClick={() => setForm({ ...form, icon: iconName })}
+                            onClick={() => handleSelectIcon(iconName)}
                             className={`rounded-2xl border p-3 text-slate-700 transition ${
                               selected ? "border-indigo-500 bg-indigo-50 text-indigo-700" : "border-slate-200 bg-white hover:border-slate-300"
                             }`}
+                            title={iconName}
                           >
-                            <Icon size={20} />
+                            <Icon size={18} />
                           </button>
                         );
                       })}
@@ -200,22 +329,20 @@ const title = editing ? "Edit Category" : "Add New Category";
                 </div>
               </div>
               <div className="rounded-3xl border border-slate-200 bg-slate-50 p-5">
-                <h2 className="text-lg font-semibold text-slate-900 mb-4">Category Icons</h2>
-                <div className="grid gap-3 sm:grid-cols-2">
-                  {ICON_OPTIONS.map((iconName) => {
-                    const Icon = iconMap[iconName];
-                    return (
-                      <div key={iconName} className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white p-4">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600">
-                          <Icon size={20} />
-                        </div>
-                        <div>
-                          <p className="font-semibold text-slate-900">{iconName}</p>
-                          <p className="text-sm text-slate-500">Use this icon for category badges.</p>
-                        </div>
-                      </div>
-                    );
-                  })}
+                <h2 className="text-lg font-semibold text-slate-900 mb-4">Selected preview</h2>
+                <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-4">
+                  <div className="mb-3 flex items-center gap-3">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600">
+                      {form.icon ? <CategoryIcon iconName={form.icon} /> : <Briefcase size={20} />}
+                    </div>
+                    <div>
+                      <p className="font-semibold text-slate-900">{form.title || "Choose a category"}</p>
+                      <p className="text-sm text-slate-500">This will be added as soon as you save.</p>
+                    </div>
+                  </div>
+                  <div className="rounded-2xl bg-slate-50 p-3 text-sm text-slate-600">
+                    Click any category preset or icon to populate the form instantly. The category is added when you press Add Category.
+                  </div>
                 </div>
               </div>
             </div>

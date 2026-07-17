@@ -17,13 +17,15 @@ const Navbar = () => {
   const location = useLocation();
 
   const isLoggedIn = !!user;
-  const isDashboardRoute = ["/adminDashboard", "/clientDashboard", "/freelancerDashboard"].includes(location.pathname);
+  const isDashboardRoute = ["/adminDashboard", "/clientDashboard", "/freelancerDashboard", "/freelancerdashboard"].some((base) =>
+    location.pathname === base || location.pathname.startsWith(`${base}/`)
+  );
+  const isAuthRoute = ["/login", "/register", "/register-with-otp"].includes(location.pathname);
+const authNavLinks = [
+  { name: "About", href: "/about" },
+];
 
-  const navLinks = [
-    { name: "Home", href: "/" },
-    { name: "Browse Jobs", href: "/jobs" },
-    { name: "Find Talent", href: "/freelancers" },
-  ];
+const visibleNavLinks = isDashboardRoute ? [] : authNavLinks;
 
   const handleLogoClick = () => {
     if (!user) {
@@ -69,34 +71,37 @@ const Navbar = () => {
           </motion.div>
 
           {/* Desktop Navigation */}
-          {!isDashboardRoute && (
-            <nav className="hidden lg:flex items-center gap-8">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.name}
-                  to={link.href}
-                  className="font-medium text-slate-600 transition hover:text-green-600"
-                >
-                  {link.name}
-                </Link>
-              ))}
-            </nav>
-          )}
+        
 
-          {/* Desktop Right Side */}
-          <div className="hidden lg:flex items-center gap-4">
-            {isLoggedIn && user ? null : (
-              /* Login & Signup */
-              <>
-                <button className="rounded-xl px-5 py-2.5 font-medium text-slate-700 transition hover:bg-slate-100">
-                  <Link to="/login">Login</Link>
-                </button>
-                <button className="rounded-xl bg-green-600 px-5 py-2.5 font-medium text-white transition hover:bg-green-700">
-                  <Link to="/Register">Sign Up</Link>
-                </button>
-              </>
-            )}
-          </div>
+        {/* Desktop Right Side */}
+{!isDashboardRoute && (
+  <div className="hidden lg:flex items-center gap-6">
+    <Link
+      to="/about"
+      className="font-medium text-slate-600 transition hover:text-green-600"
+    >
+      About
+    </Link>
+
+    {!isLoggedIn && (
+      <>
+        <Link
+          to="/login"
+          className="rounded-xl px-5 py-2.5 font-medium text-slate-700 transition hover:bg-slate-100"
+        >
+          Login
+        </Link>
+
+        <Link
+          to="/register"
+          className="rounded-xl bg-green-600 px-5 py-2.5 font-medium text-white transition hover:bg-green-700"
+        >
+          Sign Up
+        </Link>
+      </>
+    )}
+  </div>
+)}
 
           {/* Mobile Menu Button */}
           <button

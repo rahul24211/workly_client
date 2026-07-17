@@ -155,7 +155,7 @@ function Pagination({ page, totalPages, onPage }) {
 }
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
-export default function Notifications() {
+export default function Notifications({ embedded = false }) {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -242,7 +242,7 @@ export default function Notifications() {
   // ── Loading state ──
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+      <div className={`bg-slate-50 flex items-center justify-center ${embedded ? "min-h-[40vh]" : "min-h-screen"}`}>
         <div className="text-center">
           <Loader className="w-10 h-10 animate-spin text-indigo-500 mx-auto" />
           <p className="mt-3 text-sm text-slate-500">Loading notifications...</p>
@@ -252,8 +252,8 @@ export default function Notifications() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 py-8 px-4">
-      <div className="max-w-6xl mx-auto">
+    <div className={`bg-slate-50 ${embedded ? "py-0 px-0" : "min-h-screen py-8 px-4"}`}>
+      <div className={`mx-auto ${embedded ? "w-full" : "max-w-6xl"}`}>
 
         {/* Header */}
         <div className="flex items-start justify-between mb-6 gap-4">

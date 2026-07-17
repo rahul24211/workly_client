@@ -125,7 +125,7 @@ function App() {
           }
         />
         <Route
-          path="/freelancerdashboard"
+          path="/freelancerDashboard/:section?"
           element={
             <ProtectedRoute role="FREELANCER">
               <FreelancerDashboard />
@@ -134,7 +134,16 @@ function App() {
         />
 
         <Route
-          path="/adminDashboard"
+          path="/freelancerdashboard/:section?"
+          element={
+            <ProtectedRoute role="FREELANCER">
+              <FreelancerDashboard />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/adminDashboard/:section?"
           element={
             <ProtectedRoute role="ADMIN">
               <AdminDashboard />
@@ -169,7 +178,7 @@ function App() {
 
         {/* CLIENT Protected Routes (with profile completion check) */}
         <Route
-          path="/clientDashboard"
+          path="/clientDashboard/:section?"
           element={
             <ProtectedRouteWithProfileCheck role="CLIENT">
               <ClientDashboard />
