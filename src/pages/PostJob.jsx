@@ -2,13 +2,35 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  Briefcase, AlignLeft, LayoutGrid, Tag,
-  Lock, Clock, Star, Calendar, Send, X,
+  Briefcase,
+  AlignLeft,
+  LayoutGrid,
+  Tag,
+  Lock,
+  Clock,
+  Star,
+  Calendar,
+  Send,
+  X,
 } from "lucide-react";
 import { toast } from "react-toastify";
 import { clientAPI } from "../services/api";
 
-const DURATIONS = ["1 Week", "2 Weeks", "1 Month", "3 Months", "6 Months"];
+const DURATIONS = [
+  "1 Week",
+  "2 Weeks",
+  "1 Month",
+  "3 Months",
+  "4 Months",
+  "5 Months",
+  "6 Months",
+  "7 Months",
+  "8 Months",
+  "9 Months",
+  "10 Months",
+  "11 Months",
+  "1 year",
+];
 
 const EXP_LEVELS = [
   { value: "BEGINNER", label: "Beginner", sub: "0–2 years" },
@@ -19,7 +41,6 @@ const EXP_LEVELS = [
 function SectionLabel({ icon: Icon, children }) {
   return (
     <div className="flex items-center gap-2 mb-4">
-
       <span className="text-xs font-semibold text-slate-400 uppercase tracking-widest">
         {children}
       </span>
@@ -31,7 +52,9 @@ function SectionLabel({ icon: Icon, children }) {
 function Field({ label, hint, children }) {
   return (
     <div className="mb-4">
-      <label className="block text-sm font-medium text-slate-700 mb-1.5">{label}</label>
+      <label className="block text-sm font-medium text-slate-700 mb-1.5">
+        {label}
+      </label>
       {children}
       {hint && <p className="text-xs text-slate-400 mt-1">{hint}</p>}
     </div>
@@ -39,12 +62,7 @@ function Field({ label, hint, children }) {
 }
 
 function InputWrap({ icon: Icon, children }) {
-  return (
-    <div className="relative">
-
-      {children}
-    </div>
-  );
+  return <div className="relative">{children}</div>;
 }
 
 const inputCls =
@@ -117,12 +135,10 @@ export default function PostJob() {
       budget: Number(formData.budget),
     };
 
-
     try {
       setLoading(true);
 
-
-      const response = await clientAPI.createJob(payload); 
+      const response = await clientAPI.createJob(payload);
 
       toast.success("Job posted successfully!");
       navigate("/MyJobs");
@@ -137,7 +153,6 @@ export default function PostJob() {
   return (
     <div className="min-h-screen bg-slate-50 py-10 px-4">
       <div className="max-w-6xl mx-auto">
-
         {/* Page header */}
         <div className="mb-6">
           <span className="inline-block text-xs font-semibold px-3 py-1 rounded-md bg-indigo-50 text-indigo-600 uppercase tracking-wide mb-2">
@@ -152,7 +167,6 @@ export default function PostJob() {
         <form onSubmit={handleSubmit}>
           <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
             <div className="px-8 py-6">
-
               {/* ── Basics ── */}
               <div className="mb-7">
                 <SectionLabel icon={Briefcase}>Job basics</SectionLabel>
@@ -160,8 +174,11 @@ export default function PostJob() {
                 <Field label="Job title">
                   <InputWrap icon={Briefcase}>
                     <input
-                      name="title" value={formData.title} onChange={handleChange}
-                      required placeholder="e.g. Need React Developer"
+                      name="title"
+                      value={formData.title}
+                      onChange={handleChange}
+                      required
+                      placeholder="e.g. Need React Developer"
                       className={`${inputCls} h-11 pl-9 pr-4`}
                     />
                   </InputWrap>
@@ -169,10 +186,16 @@ export default function PostJob() {
 
                 <Field label="Description">
                   <div className="relative">
-                    <AlignLeft size={15} className="absolute left-3.5 top-3.5 text-slate-400 pointer-events-none" />
+                    <AlignLeft
+                      size={15}
+                      className="absolute left-3.5 top-3.5 text-slate-400 pointer-events-none"
+                    />
                     <textarea
-                      name="description" value={formData.description} onChange={handleChange}
-                      required rows={4}
+                      name="description"
+                      value={formData.description}
+                      onChange={handleChange}
+                      required
+                      rows={4}
                       placeholder="Describe the project, deliverables, and any specific requirements..."
                       className={`${inputCls} pl-9 pr-4 py-3`}
                     />
@@ -181,7 +204,10 @@ export default function PostJob() {
 
                 <Field label="Category">
                   <div className="relative">
-                    <LayoutGrid size={16} className="pointer-events-none absolute left-3 top-3 text-slate-400" />
+                    <LayoutGrid
+                      size={16}
+                      className="pointer-events-none absolute left-3 top-3 text-slate-400"
+                    />
                     <select
                       name="category"
                       value={formData.category}
@@ -223,7 +249,8 @@ export default function PostJob() {
                         >
                           {s}
                           <button
-                            type="button" onClick={() => removeSkill(s)}
+                            type="button"
+                            onClick={() => removeSkill(s)}
                             className="text-indigo-400 hover:text-indigo-700"
                             aria-label={`Remove ${s}`}
                           >
@@ -238,13 +265,24 @@ export default function PostJob() {
 
               {/* ── Budget ── */}
               <div className="mb-7">
-                <SectionLabel >Budget</SectionLabel>
+                <SectionLabel>Budget</SectionLabel>
 
-                <Field label={formData.budgetType === "FIXED" ? "Fixed budget (₹)" : "Hourly rate (₹/hr)"}>
-                  <InputWrap >
+                <Field
+                  label={
+                    formData.budgetType === "FIXED"
+                      ? "Fixed budget (₹)"
+                      : "Hourly rate (₹/hr)"
+                  }
+                >
+                  <InputWrap>
                     <input
-                      type="number" name="budget" value={formData.budget} onChange={handleChange}
-                      required min="1" placeholder="e.g. 15000"
+                      type="number"
+                      name="budget"
+                      value={formData.budget}
+                      onChange={handleChange}
+                      required
+                      min="1"
+                      placeholder="e.g. 15000"
                       className={`${inputCls} h-11 pl-9 pr-4`}
                     />
                   </InputWrap>
@@ -259,16 +297,25 @@ export default function PostJob() {
                   <div className="grid grid-cols-3 gap-2">
                     {EXP_LEVELS.map(({ value, label, sub }) => (
                       <button
-                        key={value} type="button"
-                        onClick={() => setFormData({ ...formData, experienceLevel: value })}
-                        className={`py-2.5 rounded-xl text-sm border transition text-center ${formData.experienceLevel === value
+                        key={value}
+                        type="button"
+                        onClick={() =>
+                          setFormData({ ...formData, experienceLevel: value })
+                        }
+                        className={`py-2.5 rounded-xl text-sm border transition text-center ${
+                          formData.experienceLevel === value
                             ? "bg-indigo-50 border-indigo-200 text-indigo-600 font-semibold"
                             : "bg-slate-50 border-slate-200 text-slate-500 hover:border-slate-300"
-                          }`}
+                        }`}
                       >
                         {label}
-                        <span className={`block text-xs mt-0.5 font-normal ${formData.experienceLevel === value ? "text-indigo-400" : "text-slate-400"
-                          }`}>
+                        <span
+                          className={`block text-xs mt-0.5 font-normal ${
+                            formData.experienceLevel === value
+                              ? "text-indigo-400"
+                              : "text-slate-400"
+                          }`}
+                        >
                           {sub}
                         </span>
                       </button>
@@ -279,22 +326,27 @@ export default function PostJob() {
                 <Field label="Duration">
                   <InputWrap icon={Calendar}>
                     <select
-                      name="duration" value={formData.duration} onChange={handleChange}
-                      required className={`${inputCls} h-11 pl-9 pr-4`}
+                      name="duration"
+                      value={formData.duration}
+                      onChange={handleChange}
+                      required
+                      className={`${inputCls} h-11 pl-9 pr-4`}
                     >
                       <option value="">Select duration</option>
-                      {DURATIONS.map((d) => <option key={d}>{d}</option>)}
+                      {DURATIONS.map((d) => (
+                        <option key={d}>{d}</option>
+                      ))}
                     </select>
                   </InputWrap>
                 </Field>
               </div>
-
             </div>
 
             {/* Footer */}
             <div className="px-8 py-4 border-t border-slate-100 bg-slate-50">
               <button
-                type="submit" disabled={loading}
+                type="submit"
+                disabled={loading}
                 className="w-full h-11 rounded-xl bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white text-sm font-semibold transition flex items-center justify-center gap-2"
               >
                 <Send size={15} />
@@ -303,7 +355,6 @@ export default function PostJob() {
             </div>
           </div>
         </form>
-
       </div>
     </div>
   );

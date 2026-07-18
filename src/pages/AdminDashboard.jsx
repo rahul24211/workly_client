@@ -6,10 +6,15 @@ import AdminSidebar from "../components/AdminSidebar";
 import AdminProfile from "./AdminProfile";
 import AdminCategoryManagement from "./AdminCategoryManagement";
 import AdminFreelancerApprovals from "./AdminFreelancerApprovals";
+import AdminFreelancerDetail from "./AdminFreelancerDetail";
 import Notifications from "./Notifications";
 
 const getAdminActiveView = (pathname) => {
   const segment = pathname.replace("/adminDashboard", "").replace(/^\/+/, "");
+
+  if (pathname.startsWith("/admin/freelancer/")) {
+    return "approval-detail";
+  }
 
   switch (segment) {
     case "users":
@@ -31,6 +36,7 @@ export default function AdminDashboard() {
   const [dashboardData, setDashboardData] = useState(null);
   const [pendingFreelancers, setPendingFreelancers] = useState([]);
   const [users, setUsers] = useState([]);
+  const [roleFilter, setRoleFilter] = useState("all");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const location = useLocation();
@@ -127,20 +133,58 @@ export default function AdminDashboard() {
     </div>
   );
 
+  const normalizeRole = (value) => String(value || "").trim().toUpperCase();
+
+  const visibleUsers = users.filter((user) => {
+    const role = normalizeRole(user.role);
+    const approvalStatus = normalizeRole(user.approval_status || user.approvalStatus || user.status);
+
+    if (role === "FREELANCER") {
+      return approvalStatus === "APPROVED" && (roleFilter === "all" || roleFilter === "freelancers");
+    }
+
+    if (role === "CLIENT") {
+      return roleFilter === "all" || roleFilter === "clients";
+    }
+
+    return false;
+  });
+
   const renderRightPanel = () => {
     switch (activeView) {
       case "users":
         return (
           <div className="rounded-[24px] border border-slate-200 bg-white p-8 shadow-sm">
-            <div className="mb-6 flex items-center justify-between">
+            <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
               <div>
                 <h2 className="text-2xl font-bold text-slate-900">User Management</h2>
-                <p className="text-sm text-slate-500">Browse the current user roster from a dedicated route.</p>
+                <p className="text-sm text-slate-500">Browse approved freelancers and clients from a dedicated route.</p>
+              </div>
+              <div className="flex items-center gap-2 rounded-[16px] border border-slate-200 bg-slate-50 p-1">
+                {[
+                  { value: "all", label: "All Users" },
+                  { value: "freelancers", label: "Freelancers" },
+                  { value: "clients", label: "Clients" },
+                ].map((filter) => (
+                  <button
+                    key={filter.value}
+                    type="button"
+                    onClick={() => setRoleFilter(filter.value)}
+                    className={`rounded-[12px] px-4 py-2 text-sm font-semibold transition ${
+                      roleFilter === filter.value
+                        ? "bg-indigo-600 text-white shadow-sm"
+                        : "text-slate-600 hover:bg-white hover:text-slate-900"
+                    }`}
+                  >
+                    {filter.label}
+                  </button>
+                ))}
               </div>
             </div>
-            {users.length > 0 ? (
+
+            {visibleUsers.length > 0 ? (
               <div className="space-y-3">
-                {users.map((user) => (
+                {visibleUsers.map((user) => (
                   <div key={user.id} className="flex items-center justify-between rounded-[18px] border border-slate-100 bg-slate-50 p-4">
                     <div>
                       <p className="font-semibold text-slate-900">{user.name}</p>
@@ -153,7 +197,7 @@ export default function AdminDashboard() {
                 ))}
               </div>
             ) : (
-              <p className="text-slate-600">No users found yet.</p>
+              <p className="text-slate-600">No users found for this selection.</p>
             )}
           </div>
         );
@@ -163,6 +207,8 @@ export default function AdminDashboard() {
         return <AdminCategoryManagement embedded />;
       case "approvals":
         return <AdminFreelancerApprovals embedded />;
+      case "approval-detail":
+        return <AdminFreelancerDetail embedded />;
       case "notifications":
         return <Notifications embedded />;
       case "dashboard":
@@ -197,7 +243,7 @@ export default function AdminDashboard() {
                       {pendingFreelancers.slice(0, 5).map((freelancer) => (
                         <button
                           key={freelancer.id}
-                          onClick={() => window.location.assign(`/admin/freelancer/${freelancer.id}`)}
+                          onClick={() => navigate(`/admin/freelancer/${freelancer.id}`)}
                           className="w-full text-left rounded-[20px] border border-slate-100 p-4 hover:shadow-sm transition bg-white"
                         >
                           <div className="flex items-center justify-between gap-4">

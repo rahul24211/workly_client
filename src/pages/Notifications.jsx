@@ -2,6 +2,8 @@
 // @ts-nocheck
 
 import { useState, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 import { authAPI } from "../services/api";
 import {
   Bell, CheckCircle, MessageCircle, Briefcase, Award,
@@ -43,15 +45,25 @@ const initials = (name) =>
   name ? name.split(" ").map((w) => w[0]).join("").toUpperCase().slice(0, 2) : "?";
 
 // ─── Notification Row ─────────────────────────────────────────────────────────
-function NotificationRow({ notification, onMarkRead, marking }) {
+function NotificationRow({ notification, onMarkRead, marking, onNavigate }) {
   const type = getType(notification.title);
   const Icon = type.icon;
   const sender = notification.sender;
   const isUnread = !notification.isRead;
+  const isApprovalNotification = /approval|approve|approved|accepted|reject|rejected|pending/i.test(`${notification.title || ""} ${notification.message || ""}`);
 
   return (
     <div
-      className={`relative flex items-start gap-4 px-5 py-4 rounded-2xl border transition-all ${
+      role="button"
+      tabIndex={0}
+      onClick={() => isApprovalNotification && onNavigate?.(notification)}
+      onKeyDown={(event) => {
+        if ((event.key === "Enter" || event.key === " ") && isApprovalNotification) {
+          event.preventDefault();
+          onNavigate?.(notification);
+        }
+      }}
+      className={`relative flex items-start gap-4 px-5 py-4 rounded-2xl border transition-all cursor-pointer ${
         isUnread
           ? "bg-indigo-50/60 border-indigo-100"
           : "bg-white border-slate-100"
@@ -101,7 +113,10 @@ function NotificationRow({ notification, onMarkRead, marking }) {
       {/* Mark read button */}
       {isUnread && (
         <button
-          onClick={() => onMarkRead(notification.id)}
+          onClick={(event) => {
+            event.stopPropagation();
+            onMarkRead(notification.id);
+          }}
           disabled={marking === notification.id}
           title="Mark as read"
           className="flex-shrink-0 w-8 h-8 rounded-xl bg-white border border-slate-200 hover:border-indigo-300 hover:bg-indigo-50 flex items-center justify-center text-slate-400 hover:text-indigo-600 transition disabled:opacity-50"
@@ -164,6 +179,8 @@ export default function Notifications({ embedded = false }) {
   const [pagination, setPagination] = useState({ total: 0, totalPages: 1 });
   const [marking, setMarking] = useState(null); // id of notification being marked
   const [markingAll, setMarkingAll] = useState(false);
+  const navigate = useNavigate();
+  const { user } = useAuth();
 
   const fetchNotifications = useCallback(async (p = page, silent = false) => {
     try {
@@ -221,6 +238,26 @@ export default function Notifications({ embedded = false }) {
   const handlePageChange = (p) => {
     setPage(p);
     window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handleNotificationClick = (notification) => {
+    const combinedText = `${notification?.title || ""} ${notification?.message || ""}`.toLowerCase();
+
+    if (user?.role === "FREELANCER") {
+      if (combinedText.includes("rejected")) {
+        navigate("/approval-rejected");
+        return;
+      }
+
+      if (combinedText.includes("approved") || combinedText.includes("accepted") || combinedText.includes("approval")) {
+        navigate("/freelancerDashboard");
+        return;
+      }
+    }
+
+    if (combinedText.includes("approval") || combinedText.includes("pending")) {
+      navigate("/adminDashboard/approvals");
+    }
   };
 
   // Client-side filter (read/unread) on current page data
@@ -350,6 +387,7 @@ export default function Notifications({ embedded = false }) {
                 notification={n}
                 onMarkRead={handleMarkRead}
                 marking={marking}
+                onNavigate={handleNotificationClick}
               />
             ))}
           </div>

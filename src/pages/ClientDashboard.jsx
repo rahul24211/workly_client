@@ -30,6 +30,8 @@ import MyJobs from "./MyJobs";
 import ClientContracts from "./ClientContracts";
 import FreelancersList from "./FreelancersList";
 import ClientProfilePage from "./ClientProfilePage";
+import Chat from "./Chat";
+import Notifications from "./Notifications";
 
 const getClientActiveView = (pathname) => {
   const segment = pathname.replace("/clientDashboard", "").replace(/^\/+/, "");
@@ -45,6 +47,8 @@ const getClientActiveView = (pathname) => {
       return "find-freelancers";
     case "messages":
       return "messages";
+    case "notifications":
+      return "notifications";
     case "profile":
       return "profile";
     case "settings":
@@ -146,14 +150,20 @@ export default function ClientDashboard() {
     { id: "my-jobs", label: "My Jobs", icon: Briefcase, to: "/clientDashboard/my-jobs" },
     { id: "contracts", label: "My Contracts", icon: Briefcase, to: "/clientDashboard/contracts" },
     { id: "find-freelancers", label: "Find Freelancers", icon: Search, to: "/clientDashboard/find-freelancers" },
-    { id: "messages", label: "Messages", icon: MessageSquareText, to: "/chat" },
+    { id: "messages", label: "Messages", icon: MessageSquareText, to: "/clientDashboard/messages" },
     { id: "profile", label: "Profile", icon: UserCircle2, to: "/clientDashboard/profile" },
     { id: "settings", label: "Settings", icon: Settings, to: "/clientDashboard/settings" },
+    { id: "notifications", label: "Notifications", icon: MessageSquareText, to: "/clientDashboard/notifications" },
   ];
 
   const handleSelectItem = (view) => {
     if (view === "messages") {
-      navigate("/chat");
+      navigate("/clientDashboard/messages");
+      return;
+    }
+
+    if (view === "notifications") {
+      navigate("/clientDashboard/notifications");
       return;
     }
 
@@ -181,7 +191,9 @@ export default function ClientDashboard() {
       case "find-freelancers":
         return <FreelancersList embedded />;
       case "messages":
-        return <div className="rounded-[24px] border border-slate-200 bg-white p-8 shadow-sm">Messages view coming soon.</div>;
+        return <Chat />;
+      case "notifications":
+        return <Notifications embedded />;
       case "profile":
         return <ClientProfilePage embedded />;
       case "settings":

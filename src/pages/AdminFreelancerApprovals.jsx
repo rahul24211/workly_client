@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { CheckCircle, XCircle, Clock } from "lucide-react";
@@ -7,6 +8,7 @@ import AdminSidebar from "../components/AdminSidebar";
 const AdminFreelancerApprovals = ({ embedded = false }) => {
   const [freelancers, setFreelancers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
   const token = localStorage.getItem("token");
@@ -62,29 +64,40 @@ const AdminFreelancerApprovals = ({ embedded = false }) => {
           ) : (
             <div className="space-y-4">
               {freelancers.map((f) => (
-                <div key={f.id} className="bg-white rounded-xl shadow p-6 flex items-center gap-4">
-                  {f.profile_image ? (
-                    <img src={`${API_BASE_URL}${f.profile_image}`} alt={f.name}
-                      className="w-14 h-14 rounded-full object-cover border-2 border-slate-200" />
-                  ) : (
-                    <div className="w-14 h-14 rounded-full bg-slate-200 flex items-center justify-center text-slate-500 font-bold text-xl">
-                      {f.name?.[0]?.toUpperCase()}
+                <div
+                  key={f.id}
+                  className="w-full bg-white rounded-xl shadow p-6 flex items-center gap-4 text-left hover:shadow-md transition"
+                >
+                  <button
+                    type="button"
+                    onClick={() => navigate(`/admin/freelancer/${f.id}`)}
+                    className="flex flex-1 items-center gap-4 text-left"
+                  >
+                    {f.profile_image ? (
+                      <img src={`${API_BASE_URL}${f.profile_image}`} alt={f.name}
+                        className="w-14 h-14 rounded-full object-cover border-2 border-slate-200" />
+                    ) : (
+                      <div className="w-14 h-14 rounded-full bg-slate-200 flex items-center justify-center text-slate-500 font-bold text-xl">
+                        {f.name?.[0]?.toUpperCase()}
+                      </div>
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-slate-900">{f.name}</p>
+                      <p className="text-sm text-slate-500">{f.email}</p>
+                      {f.title && <p className="text-sm text-emerald-600 mt-0.5">{f.title}</p>}
+                      <p className="text-xs text-slate-400 mt-0.5">{f.country}{f.city ? `, ${f.city}` : ""}</p>
                     </div>
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-slate-900">{f.name}</p>
-                    <p className="text-sm text-slate-500">{f.email}</p>
-                    {f.title && <p className="text-sm text-emerald-600 mt-0.5">{f.title}</p>}
-                    <p className="text-xs text-slate-400 mt-0.5">{f.country}{f.city ? `, ${f.city}` : ""}</p>
-                  </div>
+                  </button>
                   <div className="flex gap-2 shrink-0">
                     <button
+                      type="button"
                       onClick={() => handleAction(f.id, "APPROVED")}
                       className="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition"
                     >
                       <CheckCircle size={16} /> Approve
                     </button>
                     <button
+                      type="button"
                       onClick={() => handleAction(f.id, "REJECTED")}
                       className="flex items-center gap-1.5 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition"
                     >

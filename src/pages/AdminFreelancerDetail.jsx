@@ -4,7 +4,7 @@ import { CheckCircle, XCircle, ArrowLeft, Briefcase, Users, Link } from "lucide-
 import { adminAPI } from "../services/api";
 import { toast } from "react-toastify";
 
-export default function AdminFreelancerDetail() {
+export default function AdminFreelancerDetail({ embedded = false }) {
   const { freelancerId } = useParams();
   const navigate = useNavigate();
   const [freelancer, setFreelancer] = useState(null);
@@ -65,7 +65,7 @@ export default function AdminFreelancerDetail() {
 
   if (loading) {
     return (
-      <div className="bg-slate-50 min-h-screen flex items-center justify-center">
+      <div className={`bg-slate-50 ${embedded ? "min-h-[40vh]" : "min-h-screen"} flex items-center justify-center`}>
         <div className="text-center">
           <div className="animate-spin inline-block w-12 h-12 border-4 border-indigo-200 border-t-indigo-600 rounded-full mb-4"></div>
           <p className="text-gray-600">Loading freelancer details...</p>
@@ -76,7 +76,7 @@ export default function AdminFreelancerDetail() {
 
   if (error || !freelancer) {
     return (
-      <div className="bg-slate-50 min-h-screen flex items-center justify-center px-4">
+      <div className={`bg-slate-50 ${embedded ? "min-h-[40vh]" : "min-h-screen"} flex items-center justify-center px-4`}>
         <div className="bg-white p-8 rounded-3xl shadow-lg border border-red-100 max-w-xl text-center">
           <p className="text-red-600 font-semibold mb-3">{error || "Freelancer not found."}</p>
           <button
@@ -93,8 +93,8 @@ export default function AdminFreelancerDetail() {
   const profile = freelancer.FreelancerProfile || {};
 
   return (
-    <div className="bg-slate-50 min-h-screen py-12">
-      <div className="max-w-5xl mx-auto px-6">
+    <div className={`bg-slate-50 ${embedded ? "min-h-0 py-0" : "min-h-screen py-12"}`}>
+      <div className={`mx-auto ${embedded ? "w-full" : "max-w-5xl px-6"}`}>
         <div className="flex items-center gap-4 mb-8">
           <button
             onClick={() => navigate("/adminDashboard")}

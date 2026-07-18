@@ -12,7 +12,6 @@ import ApprovalPending from "./pages/ApprovalPending";
 import ApprovalRejected from "./pages/ApprovalRejected";
 import AdminFreelancerApprovals from "./pages/AdminFreelancerApprovals";
 import AdminDashboard from "./pages/AdminDashboard";
-import AdminFreelancerDetail from "./pages/AdminFreelancerDetail";
 import AdminCategoryManagement from "./pages/AdminCategoryManagement";
 
 // Client Pages
@@ -42,7 +41,7 @@ import Notifications from "./pages/Notifications";
 import FreelancerProfile from "./freelancer/FreelancerProfile";
 
 import ProtectedRoute from "./routes/ProtectedRoute";
-import { ProtectedRouteWithProfileCheck } from "./routes/ProfileCompletionGuard";
+import { ProtectedRouteWithProfileCheck, ProfileCompletionRouteGate } from "./routes/ProfileCompletionGuard";
 import FreelancerDashboard from "./freelancer/FreelancerDashboard";
 
 function App() {
@@ -62,9 +61,11 @@ function App() {
         theme="light"
       />
 
+      <ProfileCompletionRouteGate>
       <Routes>
         {/* Public Routes */}
         <Route path="/" element={<Home />} />
+        <Route path="/about" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/register-with-otp" element={<RegisterWithOTP />} />
@@ -159,10 +160,11 @@ function App() {
           }
         />
 
-        <Route          path="/admin/freelancer/:freelancerId"
+        <Route
+          path="/admin/freelancer/:freelancerId"
           element={
             <ProtectedRoute role="ADMIN">
-              <AdminFreelancerDetail />
+              <AdminDashboard />
             </ProtectedRoute>
           }
         />
@@ -314,6 +316,7 @@ function App() {
           }
         />
       </Routes>
+      </ProfileCompletionRouteGate>
     </>
   );
 }

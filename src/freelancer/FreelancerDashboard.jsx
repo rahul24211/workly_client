@@ -28,6 +28,8 @@ import MyProposals from "../pages/MyProposals";
 import MyContracts from "../pages/MyContracts";
 import SavedJobs from "../pages/SavedJobs";
 import FreelancerProfile from "./FreelancerProfile";
+import Chat from "../pages/Chat";
+import Notifications from "../pages/Notifications";
 
 const getFreelancerActiveView = (pathname) => {
   const segment = pathname.replace("/freelancerDashboard", "").replace(/^\/+/, "");
@@ -157,13 +159,18 @@ export default function FreelancerDashboard() {
     { id: "my-proposals", label: "My Proposals", icon: FileCheck2, to: "/freelancerDashboard/proposals" },
     { id: "contracts", label: "My Contracts", icon: ClipboardList, to: "/freelancerDashboard/contracts" },
     { id: "saved-jobs", label: "Saved Jobs", icon: Bookmark, to: "/freelancerDashboard/saved-jobs" },
-    { id: "messages", label: "Messages", icon: MessageSquareText, to: "/chat" },
+    { id: "messages", label: "Messages", icon: MessageSquareText, to: "/freelancerDashboard/messages" },
     { id: "notifications", label: "Notifications", icon: BellRing, to: "/freelancerDashboard/notifications" },
   ];
 
   const handleSelectItem = (view) => {
     if (view === "messages") {
-      navigate("/chat");
+      navigate("/freelancerDashboard/messages");
+      return;
+    }
+
+    if (view === "notifications") {
+      navigate("/freelancerDashboard/notifications");
       return;
     }
 
@@ -193,9 +200,9 @@ export default function FreelancerDashboard() {
       case "saved-jobs":
         return <SavedJobs embedded />;
       case "messages":
-        return <div className="rounded-[24px] border border-slate-200 bg-white p-8 shadow-sm">Messages view coming soon.</div>;
+        return <Chat />;
       case "notifications":
-        return <div className="rounded-[24px] border border-slate-200 bg-white p-8 shadow-sm">Notifications view coming soon.</div>;
+        return <Notifications embedded />;
       case "dashboard":
       default:
         return (

@@ -93,7 +93,7 @@ const visibleNavLinks = isDashboardRoute ? [] : authNavLinks;
         </Link>
 
         <Link
-          to="/register"
+          to="/register-with-otp"
           className="rounded-xl bg-green-600 px-5 py-2.5 font-medium text-white transition hover:bg-green-700"
         >
           Sign Up

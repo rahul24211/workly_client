@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { freelancerAPI } from "../services/api";
+import { useAuth } from "../context/AuthContext";
 import {
   DollarSign,
   Clock,
@@ -21,6 +22,8 @@ export default function SavedJobs() {
   const [coverLetter, setCoverLetter] = useState("");
   const [submittingProposal, setSubmittingProposal] = useState(false);
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const canSubmitProposal = user?.role === "FREELANCER" && user?.approval_status === "APPROVED";
 
   useEffect(() => {
     fetchSavedJobs();
@@ -205,8 +208,10 @@ const handleSubmitProposal = async () => {
                     {/* Action Buttons */}
                     <div className="flex flex-col gap-3 justify-between">
                       <button
-                        onClick={() => setProposalJob(job)}
-                        className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-semibold transition flex items-center justify-center gap-2"
+                        onClick={() => canSubmitProposal && setProposalJob(job)}
+                        disabled={!canSubmitProposal}
+                        className={`px-6 py-3 rounded-xl font-semibold transition flex items-center justify-center gap-2 ${canSubmitProposal ? "bg-indigo-600 hover:bg-indigo-700 text-white" : "cursor-not-allowed bg-slate-200 text-slate-500"}`}
+                        title={canSubmitProposal ? "Submit Proposal" : "Proposal submission is unavailable until your profile is approved"}
                       >
                         Submit Proposal <ChevronRight size={18} />
                       </button>
@@ -423,7 +428,7 @@ const handleSubmitProposal = async () => {
 
         <button
           onClick={handleSubmitProposal}
-          disabled={submittingProposal}
+          disabled={submittingProposal || !canSubmitProposal}
           className="px-8 py-3 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white font-semibold transition disabled:opacity-50"
         >
           {submittingProposal ? (
