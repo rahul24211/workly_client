@@ -44,15 +44,17 @@ const AdminFreelancerApprovals = ({ embedded = false }) => {
   );
 
   return (
-    <div className={`bg-slate-50 ${embedded ? "min-h-0 p-0" : "min-h-screen p-4 lg:p-8"}`}>
-      <div className={embedded ? "mx-auto" : "mx-auto flex max-w-7xl flex-col gap-6 lg:flex-row"}>
+    <div className={`overflow-x-hidden bg-slate-50 ${embedded ? "min-h-0 p-0" : "min-h-screen p-3 sm:p-4 lg:p-8"}`}>
+      <div className={embedded ? "mx-auto" : "mx-auto flex max-w-7xl flex-col gap-4 lg:flex-row lg:gap-6"}>
         {!embedded && <AdminSidebar />}
 
         <div className={embedded ? "w-full" : "flex-1"}>
-          <div className="flex items-center gap-3 mb-8">
-            <Clock size={28} className="text-amber-500" />
-            <h1 className="text-2xl font-bold text-slate-900">Pending Freelancer Approvals</h1>
-            <span className="ml-auto bg-amber-100 text-amber-700 text-sm font-medium px-3 py-1 rounded-full">
+          <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-3">
+              <Clock size={28} className="text-amber-500" />
+              <h1 className="text-xl font-bold text-slate-900 sm:text-2xl">Pending Freelancer Approvals</h1>
+            </div>
+            <span className="w-fit bg-amber-100 text-amber-700 text-sm font-medium px-3 py-1 rounded-full">
               {freelancers.length} pending
             </span>
           </div>
@@ -66,7 +68,7 @@ const AdminFreelancerApprovals = ({ embedded = false }) => {
               {freelancers.map((f) => (
                 <div
                   key={f.id}
-                  className="w-full bg-white rounded-xl shadow p-6 flex items-center gap-4 text-left hover:shadow-md transition"
+                  className="w-full bg-white rounded-xl shadow p-4 sm:p-6 flex flex-col gap-4 text-left hover:shadow-md transition sm:flex-row sm:items-center"
                 >
                   <button
                     type="button"
@@ -88,18 +90,18 @@ const AdminFreelancerApprovals = ({ embedded = false }) => {
                       <p className="text-xs text-slate-400 mt-0.5">{f.country}{f.city ? `, ${f.city}` : ""}</p>
                     </div>
                   </button>
-                  <div className="flex gap-2 shrink-0">
+                  <div className="flex flex-col gap-2 sm:flex-row sm:shrink-0">
                     <button
                       type="button"
                       onClick={() => handleAction(f.id, "APPROVED")}
-                      className="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition"
+                      className="flex items-center justify-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition"
                     >
                       <CheckCircle size={16} /> Approve
                     </button>
                     <button
                       type="button"
                       onClick={() => handleAction(f.id, "REJECTED")}
-                      className="flex items-center gap-1.5 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition"
+                      className="flex items-center justify-center gap-1.5 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition"
                     >
                       <XCircle size={16} /> Reject
                     </button>

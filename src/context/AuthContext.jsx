@@ -4,6 +4,7 @@ import {
   useState,
   useEffect,
 } from "react";
+import { authAPI } from "../services/api";
 
 const AuthContext = createContext();
 
@@ -111,11 +112,17 @@ export const AuthProvider = ({ children }) => {
     setUser(updatedUser);
   };
 
-  const logout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    setUser(null);
-    setToken(null);
+  const logout = async () => {
+    try {
+      await authAPI.logout();
+    } catch (error) {
+      console.warn("Logout request failed, clearing local session anyway:", error);
+    } finally {
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      setUser(null);
+      setToken(null);
+    }
   };
 
   return (

@@ -8,6 +8,9 @@ import Navbar from "./components/Navbar";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import RegisterWithOTP from "./pages/RegisterWithOTP";
+import ForgotPassword from "./pages/ForgotPassword";
+import AboutPage from "./pages/AboutPage";
+import ContactInformation from "./pages/ContactInformation";
 import ApprovalPending from "./pages/ApprovalPending";
 import ApprovalRejected from "./pages/ApprovalRejected";
 import AdminFreelancerApprovals from "./pages/AdminFreelancerApprovals";
@@ -41,8 +44,11 @@ import Notifications from "./pages/Notifications";
 import FreelancerProfile from "./freelancer/FreelancerProfile";
 
 import ProtectedRoute from "./routes/ProtectedRoute";
+import PublicRoute from "./routes/PublicRoute";
 import { ProtectedRouteWithProfileCheck, ProfileCompletionRouteGate } from "./routes/ProfileCompletionGuard";
 import FreelancerDashboard from "./freelancer/FreelancerDashboard";
+import HowItWorks from "./pages/HowItWork";
+import WhyChooseFreeLincer from "./pages/WhyChooseFreeLincer";
 
 function App() {
   return (
@@ -64,11 +70,15 @@ function App() {
       <ProfileCompletionRouteGate>
       <Routes>
         {/* Public Routes */}
-        <Route path="/" element={<Home />} />
-        <Route path="/about" element={<Home />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/register-with-otp" element={<RegisterWithOTP />} />
+        <Route path="/" element={<PublicRoute><Home /></PublicRoute>} />
+        <Route path="/about" element={<PublicRoute><AboutPage /></PublicRoute>} />
+        <Route path="/contact" element={<PublicRoute><ContactInformation /></PublicRoute>} />
+        <Route path="/whychooseus" element={<PublicRoute><WhyChooseFreeLincer /></PublicRoute>} />
+        <Route path="/howitwork" element={<PublicRoute><HowItWorks /></PublicRoute>} />
+        <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
+        <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
+        <Route path="/register-with-otp" element={<PublicRoute><RegisterWithOTP /></PublicRoute>} />
+        <Route path="/forgot-password" element={<PublicRoute><ForgotPassword /></PublicRoute>} />
         <Route path="/approval-pending" element={<ApprovalPending />} />
         <Route path="/approval-rejected" element={<ApprovalRejected />} />
         <Route

@@ -1,16 +1,13 @@
 // src/components/layout/Navbar.jsx
 
-import { useState } from "react";
-import { motion, AnimatePresence } from "motion/react";
-import { Menu, X } from "lucide-react";
+import { motion } from "motion/react";
+import { ArrowRight } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 import logo from "../assets/logo.png";
 
 const Navbar = () => {
-  const [isOpen, setIsOpen] = useState(false);
-
   // Use AuthContext as single source of truth
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -92,52 +89,26 @@ const visibleNavLinks = isDashboardRoute ? [] : authNavLinks;
           Login
         </Link>
 
-        <Link
-          to="/register-with-otp"
-          className="rounded-xl bg-green-600 px-5 py-2.5 font-medium text-white transition hover:bg-green-700"
-        >
-          Sign Up
-        </Link>
+        <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }} className="inline-block">
+  <Link
+    to="/register-with-otp"
+    className="group inline-flex items-center gap-2 rounded-full bg-[#0F2B22] px-5 py-2.5 font-semibold text-white transition hover:bg-[#153A2C]"
+  >
+    Get Started
+    <ArrowRight
+      size={16}
+      className="transition-transform duration-200 group-hover:translate-x-1"
+    />
+  </Link>
+</motion.div>
       </>
     )}
   </div>
 )}
 
-          {/* Mobile Menu Button */}
-          <button
-            onClick={() => setIsOpen(!isOpen)}
-            className="flex h-11 w-11 items-center justify-center rounded-xl border border-slate-200 lg:hidden"
-          >
-            {isOpen ? <X size={22} /> : <Menu size={22} />}
-          </button>
         </div>
       </div>
 
-      {/* Mobile Drawer */}
-      <AnimatePresence>
-        {isOpen && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setIsOpen(false)}
-              className="fixed inset-0 bg-black/40 lg:hidden"
-            />
-
-            <motion.div
-              initial={{ x: "100%" }}
-              animate={{ x: 0 }}
-              exit={{ x: "100%" }}
-              transition={{ duration: 0.3 }}
-              className="fixed right-0 top-0 h-screen w-[85%] max-w-sm bg-white shadow-2xl lg:hidden"
-            >
-              {/* Mobile menu content - same structure as desktop */}
-              {/* Omitted for brevity - mirrors desktop structure */}
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
     </header>
   );
 };

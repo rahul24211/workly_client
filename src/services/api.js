@@ -22,7 +22,6 @@ api.interceptors.response.use(
     if (error.response?.status === 401) {
       localStorage.removeItem("token");
       localStorage.removeItem("user");
-      window.location.href = "/login";
     }
     return Promise.reject(error);
   }
@@ -35,6 +34,11 @@ export const authOtpAPI = {
   verifyRegistrationOTP: (data) =>
     api.post("/api/auth/verify-registration-otp", data),
   resendOTP: (data) => api.post("/api/auth/resend-otp", data),
+  requestPasswordReset: (data) =>
+    api.post("/api/auth/forgot-password/request", data),
+  verifyPasswordResetOTP: (data) =>
+    api.post("/api/auth/forgot-password/verify", data),
+  resetPassword: (data) => api.post("/api/auth/forgot-password/reset", data),
   login: (data) => api.post("/api/auth/login", data),
 };
 
@@ -57,6 +61,7 @@ export const profileAPI = {
 export const authAPI = {
   register: (data) => api.post("/api/auth/register", data),
   login: (data) => api.post("/api/auth/login", data),
+  logout: () => api.post("/api/auth/logout"),
   getMyProfile: () => api.get("/api/auth/getmyprofile"),
   completeProfile: (data) => api.post("/api/auth/completeprofile", data),
   updateProfile: (data) => api.put("/api/auth/updateprofile", data),

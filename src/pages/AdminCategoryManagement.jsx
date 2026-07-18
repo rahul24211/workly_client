@@ -226,12 +226,12 @@ export default function AdminCategoryManagement({ embedded = false }) {
 const title = editing ? "Edit Category" : "Add New Category";
 
   return (
-    <div className={`bg-slate-50 ${embedded ? "min-h-0 py-0" : "min-h-screen py-8 px-4"}`}>
-      <div className={embedded ? "mx-auto" : "max-w-7xl mx-auto grid gap-6 lg:grid-cols-[280px_1fr]"}>
+    <div className={`overflow-x-hidden bg-slate-50 ${embedded ? "min-h-0 py-0" : "min-h-screen px-3 py-4 sm:px-4 sm:py-6 lg:px-4 lg:py-8"}`}>
+      <div className={embedded ? "mx-auto" : "mx-auto grid max-w-7xl gap-4 lg:grid-cols-[280px_1fr] lg:gap-6"}>
         {!embedded && <AdminSidebar />}
 
         <main className="space-y-6">
-          <div className="flex flex-col gap-4 rounded-3xl bg-white p-6 shadow-sm border border-slate-200">
+          <div className="flex flex-col gap-4 rounded-3xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <p className="text-sm uppercase tracking-[0.2em] text-slate-400">Category Management</p>
@@ -288,7 +288,7 @@ const title = editing ? "Edit Category" : "Add New Category";
 
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-2">Icon</label>
-                    <div className="grid grid-cols-4 gap-2 sm:grid-cols-6 xl:grid-cols-8">
+                    <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8">
                       {ICON_OPTIONS.map((iconName) => {
                         const Icon = iconMap[iconName];
                         const selected = form.icon === iconName;

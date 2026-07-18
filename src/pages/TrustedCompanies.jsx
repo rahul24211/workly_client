@@ -66,34 +66,7 @@ const TrustedCompanies = () => {
         </div>
 
         {/* Stats */}
-        <div className="mt-16 grid gap-6 md:grid-cols-4">
-          {[
-            { value: "50K+", label: "Freelancers" },
-            { value: "12K+", label: "Clients" },
-            { value: "200K+", label: "Projects Completed" },
-            { value: "99%", label: "Success Rate" },
-          ].map((item, index) => (
-            <motion.div
-              key={item.label}
-              initial={{ opacity: 0, y: 25 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{
-                duration: 0.5,
-                delay: index * 0.1,
-              }}
-              className="rounded-3xl border border-slate-200 bg-white p-6 text-center shadow-sm"
-            >
-              <h3 className="text-3xl font-bold text-green-600">
-                {item.value}
-              </h3>
-
-              <p className="mt-2 text-slate-600">
-                {item.label}
-              </p>
-            </motion.div>
-          ))}
-        </div>
+       
       </div>
     </section>
   );

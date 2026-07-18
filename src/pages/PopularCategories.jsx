@@ -68,7 +68,7 @@ const PopularCategories = () => {
           viewport={{ once: true }}
           className="mx-auto mb-14 max-w-3xl text-center"
         >
-          <span className="rounded-full bg-green-100 px-4 py-2 text-sm font-semibold text-green-700">
+          <span className="rounded-full bg-emerald-100 px-4 py-2 text-sm font-semibold text-emerald-700">
             Explore Categories
           </span>
 
@@ -101,14 +101,14 @@ const PopularCategories = () => {
                 whileHover={{
                   y: -8,
                 }}
-                className="group relative overflow-hidden rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition-all hover:border-green-200 hover:shadow-xl"
+                className="group relative overflow-hidden rounded-[24px] border border-slate-200 bg-white p-6 shadow-sm transition-all hover:-translate-y-2 hover:border-emerald-200 hover:shadow-xl"
               >
                 {/* Gradient Background */}
-                <div className="absolute inset-0 bg-gradient-to-br from-green-50 via-transparent to-emerald-50 opacity-0 transition duration-300 group-hover:opacity-100" />
+                <div className="absolute inset-0 bg-gradient-to-br from-emerald-50 via-white to-sky-50 opacity-0 transition duration-300 group-hover:opacity-100" />
 
                 <div className="relative z-10">
                   {/* Icon */}
-                  <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-green-100 text-green-600 transition group-hover:scale-110">
+                  <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-600 transition group-hover:scale-110">
                     <Icon size={30} />
                   </div>
 
@@ -122,7 +122,7 @@ const PopularCategories = () => {
                   </p>
 
                   {/* Link */}
-                  <div className="mt-6 flex items-center gap-2 font-medium text-green-600 opacity-0 transition-all duration-300 group-hover:opacity-100">
+                  <div className="mt-6 flex items-center gap-2 font-medium text-emerald-600 opacity-0 transition-all duration-300 group-hover:opacity-100">
                     Explore
                     <ArrowRight size={18} />
                   </div>
@@ -139,9 +139,9 @@ const PopularCategories = () => {
           viewport={{ once: true }}
           className="mt-14 text-center"
         >
-          <button className="rounded-2xl bg-green-600 px-8 py-4 font-semibold text-white transition hover:bg-green-700">
+          {/* <button className="rounded-2xl bg-slate-900 px-8 py-4 font-semibold text-white transition hover:bg-slate-700">
             View All Categories
-          </button>
+          </button> */}
         </motion.div>
       </div>
     </section>

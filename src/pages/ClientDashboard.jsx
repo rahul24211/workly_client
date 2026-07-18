@@ -1,10 +1,6 @@
 import { useEffect, useState } from "react";
 import {
   Search,
-  Code,
-  PenTool,
-  Video,
-  Palette,
   ArrowRight,
   TrendingUp,
   Briefcase,
@@ -13,14 +9,16 @@ import {
   Users,
   Clock,
   AlertCircle,
-  Star,
   LayoutDashboard,
   FileText,
   MessageSquareText,
   UserCircle2,
   Settings,
+  Sparkles,
+  CalendarClock,
+  X,
 } from "lucide-react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { clientAPI } from "../services/api";
 import CurvedSidebar from "../components/CurvedSidebar";
 import { useAuth } from "../context/AuthContext";
@@ -64,6 +62,7 @@ export default function ClientDashboard() {
   const [error, setError] = useState(null);
   const [selectedContract, setSelectedContract] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const { logout } = useAuth();
@@ -77,6 +76,14 @@ export default function ClientDashboard() {
   useEffect(() => {
     fetchDashboardData();
   }, []);
+
+  useEffect(() => {
+    if (!loading) {
+      const t = setTimeout(() => setMounted(true), 30);
+      return () => clearTimeout(t);
+    }
+    setMounted(false);
+  }, [loading, activeView]);
 
   const fetchDashboardData = async () => {
     try {
@@ -95,10 +102,13 @@ export default function ClientDashboard() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-50">
+      <div className="flex min-h-screen items-center justify-center bg-slate-50 px-4">
         <div className="text-center">
-          <div className="mb-4 inline-block h-12 w-12 animate-spin rounded-full border-4 border-indigo-200 border-t-indigo-600"></div>
-          <p className="text-gray-600">Loading dashboard...</p>
+          <div className="relative inline-flex mb-4">
+            <div className="h-14 w-14 animate-spin rounded-full border-4 border-indigo-100 border-t-indigo-600"></div>
+            <Sparkles className="absolute inset-0 m-auto text-indigo-500 animate-pulse" size={20} />
+          </div>
+          <p className="text-gray-600 animate-pulse">Loading dashboard...</p>
         </div>
       </div>
     );
@@ -106,13 +116,13 @@ export default function ClientDashboard() {
 
   if (error) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-50">
-        <div className="max-w-md rounded-xl border border-red-200 bg-red-50 p-6">
-          <AlertCircle className="mb-2 text-red-600" />
+      <div className="flex min-h-screen items-center justify-center bg-slate-50 px-4">
+        <div className="max-w-md w-full rounded-2xl border border-red-200 bg-red-50 p-6 animate-[fadeInUp_0.4s_ease-out] shadow-sm">
+          <AlertCircle className="mb-2 text-red-600 animate-bounce" />
           <p className="text-red-800">{error}</p>
           <button
             onClick={fetchDashboardData}
-            className="mt-4 rounded-lg bg-red-600 px-4 py-2 text-white hover:bg-red-700"
+            className="mt-4 rounded-lg bg-red-600 px-4 py-2 text-white hover:bg-red-700 hover:scale-[1.03] active:scale-95 transition-all duration-200"
           >
             Retry
           </button>
@@ -126,22 +136,41 @@ export default function ClientDashboard() {
   const recentProposals = dashboardData?.recentProposals || [];
   const topFreelancers = dashboardData?.topFreelancers || [];
 
-  const StatCard = ({ icon: Icon, label, value, subtext, color = "blue" }) => (
-    <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm transition hover:shadow-lg">
-      <div className="flex items-start justify-between">
-        <div>
-          <p className="text-sm font-medium text-gray-600">{label}</p>
-          <p className={`mt-2 text-3xl font-bold text-${color}-600`}>{value}</p>
-          {subtext && <p className="mt-1 text-xs text-gray-500">{subtext}</p>}
-        </div>
-        <Icon className={`text-${color}-600`} size={32} />
-      </div>
-    </div>
-  );
+  const colorMap = {
+    blue: { text: "text-blue-600", bg: "bg-blue-50", ring: "group-hover:ring-blue-200" },
+    yellow: { text: "text-yellow-600", bg: "bg-yellow-50", ring: "group-hover:ring-yellow-200" },
+    green: { text: "text-green-600", bg: "bg-green-50", ring: "group-hover:ring-green-200" },
+    emerald: { text: "text-emerald-600", bg: "bg-emerald-50", ring: "group-hover:ring-emerald-200" },
+    purple: { text: "text-purple-600", bg: "bg-purple-50", ring: "group-hover:ring-purple-200" },
+    indigo: { text: "text-indigo-600", bg: "bg-indigo-50", ring: "group-hover:ring-indigo-200" },
+  };
 
-  const handleLogout = () => {
-    logout();
-    navigate("/login");
+  const StatCard = ({ icon: Icon, label, value, subtext, color = "blue", delay = 0 }) => {
+    const c = colorMap[color] || colorMap.blue;
+    return (
+      <div
+        className={`group rounded-2xl border border-gray-100 bg-white p-5 sm:p-6 shadow-sm ring-1 ring-transparent transition-all duration-300 hover:shadow-lg hover:-translate-y-1 ${c.ring} ${
+          mounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-3"
+        }`}
+        style={{ transitionDelay: mounted ? `${delay}ms` : "0ms" }}
+      >
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <p className="text-sm font-medium text-gray-600 truncate">{label}</p>
+            <p className={`mt-2 text-2xl sm:text-3xl font-bold ${c.text} tabular-nums`}>{value}</p>
+            {subtext && <p className="mt-1 text-xs text-gray-500 truncate">{subtext}</p>}
+          </div>
+          <div className={`shrink-0 p-3 rounded-2xl ${c.bg} transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3`}>
+            <Icon className={c.text} size={24} />
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const handleLogout = async () => {
+    await logout();
+    navigate("/login", { replace: true });
   };
 
   const sidebarLinks = [
@@ -197,59 +226,85 @@ export default function ClientDashboard() {
       case "profile":
         return <ClientProfilePage embedded />;
       case "settings":
-        return <div className="rounded-[24px] border border-slate-200 bg-white p-8 shadow-sm">Settings view coming soon.</div>;
+        return (
+          <div className="rounded-[24px] border border-slate-200 bg-white p-8 shadow-sm animate-[fadeInUp_0.35s_ease-out] flex items-center gap-3 text-slate-600">
+            <Settings className="text-indigo-500" size={20} />
+            Settings view coming soon.
+          </div>
+        );
       case "dashboard":
       default:
         return (
           <>
-            <section className="rounded-[32px] bg-gradient-to-r from-indigo-600 to-purple-600 px-8 py-12 text-white shadow-[0_20px_60px_-20px_rgba(15,23,42,0.35)]">
-              <div className="max-w-5xl">
-                <h1 className="mb-2 text-4xl font-bold">Client Dashboard</h1>
-                <p className="text-indigo-100">Manage your projects, contracts, and team</p>
+            <section
+              className={`relative overflow-hidden rounded-[32px] bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-10 sm:px-8 sm:py-12 text-white shadow-[0_20px_60px_-20px_rgba(15,23,42,0.35)] transition-all duration-500 ${
+                mounted ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-3"
+              }`}
+            >
+              <div className="pointer-events-none absolute -right-10 -top-10 h-56 w-56 rounded-full bg-white/10 blur-2xl"></div>
+              <div className="pointer-events-none absolute bottom-0 right-24 h-40 w-40 rounded-full bg-purple-300/10 blur-2xl"></div>
+              <div className="relative max-w-5xl">
+                <h1 className="mb-2 text-3xl sm:text-4xl font-bold flex items-center gap-3">
+                  <LayoutDashboard className="text-indigo-100" size={30} />
+                  Client Dashboard
+                </h1>
+                <p className="text-indigo-100 text-sm sm:text-base">Manage your projects, contracts, and team</p>
               </div>
             </section>
 
             <section className="py-8">
-              <h2 className="mb-6 text-2xl font-bold">Overview</h2>
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-6">
-                <StatCard icon={Briefcase} label="Total Jobs" value={stats.totalJobs || 0} color="blue" />
-                <StatCard icon={Clock} label="Open Jobs" value={stats.openJobs || 0} color="yellow" />
-                <StatCard icon={Users} label="Active Contracts" value={stats.activeContracts || 0} color="green" />
-                <StatCard icon={CheckCircle} label="Completed" value={stats.completedJobs || 0} color="emerald" />
-                <StatCard icon={TrendingUp} label="Finished Contracts" value={stats.completedContracts || 0} color="purple" />
-                <StatCard icon={DollarSign} label="Total Spent" value={`₹${stats.totalSpent?.toLocaleString("en-IN") || 0}`} color="indigo" />
+              <h2 className="mb-6 text-xl sm:text-2xl font-bold">Overview</h2>
+              <div className="grid gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
+                <StatCard icon={Briefcase} label="Total Jobs" value={stats.totalJobs || 0} color="blue" delay={0} />
+                <StatCard icon={Clock} label="Open Jobs" value={stats.openJobs || 0} color="yellow" delay={50} />
+                <StatCard icon={Users} label="Active Contracts" value={stats.activeContracts || 0} color="green" delay={100} />
+                <StatCard icon={CheckCircle} label="Completed" value={stats.completedJobs || 0} color="emerald" delay={150} />
+                <StatCard icon={TrendingUp} label="Finished Contracts" value={stats.completedContracts || 0} color="purple" delay={200} />
+                <StatCard icon={DollarSign} label="Total Spent" value={`₹${stats.totalSpent?.toLocaleString("en-IN") || 0}`} color="indigo" delay={250} />
               </div>
             </section>
 
             <section className="pb-6">
               <div className="mb-6 flex items-center justify-between">
-                <h2 className="text-2xl font-bold">Active Contracts</h2>
-                <button onClick={() => handleSelectItem("contracts")} className="font-semibold text-indigo-600 hover:text-indigo-700">
-                  View All →
+                <h2 className="text-xl sm:text-2xl font-bold">Active Contracts</h2>
+                <button
+                  onClick={() => handleSelectItem("contracts")}
+                  className="group flex items-center gap-1 font-semibold text-indigo-600 hover:text-indigo-700 transition-colors"
+                >
+                  View All
+                  <ArrowRight size={16} className="transition-transform duration-200 group-hover:translate-x-1" />
                 </button>
               </div>
 
               {activeContracts.length > 0 ? (
                 <div className="grid gap-6 md:grid-cols-2">
-                  {activeContracts.map((contract) => (
-                    <div key={contract.id} className="rounded-[24px] border border-gray-100 bg-white p-6 shadow-sm transition hover:shadow-lg">
-                      <div className="mb-4 flex items-start justify-between">
-                        <div>
-                          <h3 className="text-lg font-bold">{contract.freelancer.name}</h3>
-                          <p className="text-sm text-gray-600">{contract.freelancer.title}</p>
+                  {activeContracts.map((contract, i) => (
+                    <div
+                      key={contract.id}
+                      className="rounded-[24px] border border-gray-100 bg-white p-6 shadow-sm transition-all duration-300 hover:shadow-lg hover:-translate-y-1 animate-[fadeInUp_0.35s_ease-out_backwards]"
+                      style={{ animationDelay: `${i * 60}ms` }}
+                    >
+                      <div className="mb-4 flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <h3 className="text-lg font-bold truncate">{contract.freelancer.name}</h3>
+                          <p className="text-sm text-gray-600 truncate">{contract.freelancer.title}</p>
                         </div>
-                        <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-bold text-green-700">
+                        <span className="shrink-0 rounded-full bg-green-100 px-3 py-1 text-xs font-bold text-green-700">
                           {contract.status}
                         </span>
                       </div>
 
                       <div className="space-y-3">
                         <div className="flex justify-between">
-                          <span className="text-gray-600">Amount:</span>
+                          <span className="text-gray-600 flex items-center gap-1">
+                            <DollarSign size={14} /> Amount:
+                          </span>
                           <span className="font-bold text-indigo-600">₹{contract.amount?.toLocaleString("en-IN")}</span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-gray-600">Due Date:</span>
+                          <span className="text-gray-600 flex items-center gap-1">
+                            <CalendarClock size={14} /> Due Date:
+                          </span>
                           <span className="text-sm">
                             {contract.dueDate ? new Date(contract.dueDate).toLocaleDateString("en-IN") : "N/A"}
                           </span>
@@ -258,7 +313,7 @@ export default function ClientDashboard() {
 
                       <button
                         onClick={() => handleViewDetails(contract)}
-                        className="mt-4 w-full rounded-[16px] bg-indigo-600 py-2 text-white transition hover:bg-indigo-700"
+                        className="mt-4 w-full rounded-[16px] bg-indigo-600 py-2 text-white transition-all duration-200 hover:bg-indigo-700 hover:shadow-md active:scale-[0.98]"
                       >
                         View Details
                       </button>
@@ -266,10 +321,13 @@ export default function ClientDashboard() {
                   ))}
                 </div>
               ) : (
-                <div className="rounded-[24px] border border-gray-100 bg-white p-12 text-center">
+                <div className="rounded-[24px] border border-gray-100 bg-white p-10 sm:p-12 text-center animate-[fadeInUp_0.35s_ease-out]">
                   <Briefcase size={48} className="mx-auto mb-4 text-gray-400" />
                   <p className="mb-4 text-gray-600">No active contracts yet</p>
-                  <button onClick={() => handleSelectItem("find-freelancers")} className="inline-block rounded-[16px] bg-indigo-600 px-6 py-3 text-white transition hover:bg-indigo-700">
+                  <button
+                    onClick={() => handleSelectItem("find-freelancers")}
+                    className="inline-block rounded-[16px] bg-indigo-600 px-6 py-3 text-white transition-all duration-200 hover:bg-indigo-700 hover:scale-[1.03] active:scale-95"
+                  >
                     Find Freelancers
                   </button>
                 </div>
@@ -277,18 +335,30 @@ export default function ClientDashboard() {
             </section>
 
             <section className="pb-6">
-              <h2 className="mb-6 text-2xl font-bold">Recent Proposals</h2>
+              <h2 className="mb-6 text-xl sm:text-2xl font-bold">Recent Proposals</h2>
 
               {recentProposals.length > 0 ? (
                 <div className="space-y-4">
-                  {recentProposals.map((proposal) => (
-                    <div key={proposal.id} className="rounded-[24px] border border-gray-100 bg-white p-6 shadow-sm transition hover:shadow-lg">
-                      <div className="mb-3 flex items-start justify-between">
-                        <div className="flex-1">
-                          <h3 className="text-lg font-bold">{proposal.jobTitle}</h3>
-                          <p className="text-gray-600">From: {proposal.freelancer.name}</p>
+                  {recentProposals.map((proposal, i) => (
+                    <div
+                      key={proposal.id}
+                      className="rounded-[24px] border border-gray-100 bg-white p-5 sm:p-6 shadow-sm transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 animate-[fadeInUp_0.3s_ease-out_backwards]"
+                      style={{ animationDelay: `${i * 50}ms` }}
+                    >
+                      <div className="mb-3 flex items-start justify-between gap-3">
+                        <div className="min-w-0 flex-1">
+                          <h3 className="text-lg font-bold truncate">{proposal.jobTitle}</h3>
+                          <p className="text-gray-600 truncate">From: {proposal.freelancer.name}</p>
                         </div>
-                        <span className={`rounded-full px-3 py-1 text-xs font-bold ${proposal.status === "PENDING" ? "bg-yellow-100 text-yellow-700" : proposal.status === "ACCEPTED" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
+                        <span
+                          className={`shrink-0 rounded-full px-3 py-1 text-xs font-bold ${
+                            proposal.status === "PENDING"
+                              ? "bg-yellow-100 text-yellow-700"
+                              : proposal.status === "ACCEPTED"
+                              ? "bg-green-100 text-green-700"
+                              : "bg-red-100 text-red-700"
+                          }`}
+                        >
                           {proposal.status}
                         </span>
                       </div>
@@ -303,7 +373,7 @@ export default function ClientDashboard() {
                   ))}
                 </div>
               ) : (
-                <div className="rounded-2xl border border-gray-100 bg-white p-12 text-center">
+                <div className="rounded-2xl border border-gray-100 bg-white p-10 sm:p-12 text-center animate-[fadeInUp_0.35s_ease-out]">
                   <AlertCircle size={48} className="mx-auto mb-4 text-gray-400" />
                   <p className="text-gray-600">No proposals received yet</p>
                 </div>
@@ -311,26 +381,30 @@ export default function ClientDashboard() {
             </section>
 
             <section className="pb-6">
-              <h2 className="mb-6 text-2xl font-bold">Your Top Freelancers</h2>
+              <h2 className="mb-6 text-xl sm:text-2xl font-bold">Your Top Freelancers</h2>
 
               {topFreelancers.length > 0 ? (
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
-                  {topFreelancers.map((freelancer) => (
-                    <div key={freelancer.id} className="rounded-2xl border border-slate-200 bg-white p-6 text-center shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-xl">
-                      <div className="mx-auto mb-4 h-20 w-20 overflow-hidden rounded-full border-4 border-indigo-100">
+                <div className="grid gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
+                  {topFreelancers.map((freelancer, i) => (
+                    <div
+                      key={freelancer.id}
+                      className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 text-center shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl animate-[fadeInUp_0.35s_ease-out_backwards]"
+                      style={{ animationDelay: `${i * 60}ms` }}
+                    >
+                      <div className="mx-auto mb-4 h-16 w-16 sm:h-20 sm:w-20 overflow-hidden rounded-full border-4 border-indigo-100 transition-transform duration-300 hover:scale-105">
                         <img
                           src={freelancer.profile_image ? `${import.meta.env.VITE_API_BASE_URL}${freelancer.profile_image}` : "/default-avatar.png"}
                           alt={freelancer.name}
                           className="h-full w-full object-cover"
                         />
                       </div>
-                      <h3 className="text-lg font-bold text-slate-800">{freelancer.name}</h3>
+                      <h3 className="text-base sm:text-lg font-bold text-slate-800 truncate">{freelancer.name}</h3>
                       <p className="mt-1 line-clamp-1 text-sm text-slate-500">{freelancer.title}</p>
                     </div>
                   ))}
                 </div>
               ) : (
-                <div className="rounded-2xl border border-gray-100 bg-white p-12 text-center">
+                <div className="rounded-2xl border border-gray-100 bg-white p-10 sm:p-12 text-center animate-[fadeInUp_0.35s_ease-out]">
                   <Users size={48} className="mx-auto mb-4 text-gray-400" />
                   <p className="text-gray-600">No freelancers worked with yet</p>
                 </div>
@@ -338,20 +412,35 @@ export default function ClientDashboard() {
             </section>
 
             <section className="pb-6">
-              <h2 className="mb-6 text-2xl font-bold">Quick Actions</h2>
-              <div className="grid gap-6 md:grid-cols-3">
-                <button onClick={() => handleSelectItem("post-job")} className="rounded-2xl border border-gray-100 bg-white p-8 text-center shadow-sm transition hover:shadow-lg">
-                  <Briefcase className="mx-auto mb-4 text-indigo-600" size={40} />
+              <h2 className="mb-6 text-xl sm:text-2xl font-bold">Quick Actions</h2>
+              <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3">
+                <button
+                  onClick={() => handleSelectItem("post-job")}
+                  className="group rounded-2xl border border-gray-100 bg-white p-6 sm:p-8 text-center shadow-sm transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
+                >
+                  <div className="mx-auto mb-4 w-fit p-3 rounded-2xl bg-indigo-50 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
+                    <Briefcase className="text-indigo-600" size={32} />
+                  </div>
                   <h3 className="text-lg font-bold">Post a Job</h3>
                   <p className="mt-2 text-sm text-gray-600">Create a new job posting and find talent</p>
                 </button>
-                <button onClick={() => handleSelectItem("find-freelancers")} className="rounded-2xl border border-gray-100 bg-white p-8 text-center shadow-sm transition hover:shadow-lg">
-                  <Search className="mx-auto mb-4 text-green-600" size={40} />
+                <button
+                  onClick={() => handleSelectItem("find-freelancers")}
+                  className="group rounded-2xl border border-gray-100 bg-white p-6 sm:p-8 text-center shadow-sm transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
+                >
+                  <div className="mx-auto mb-4 w-fit p-3 rounded-2xl bg-green-50 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
+                    <Search className="text-green-600" size={32} />
+                  </div>
                   <h3 className="text-lg font-bold">Browse Freelancers</h3>
                   <p className="mt-2 text-sm text-gray-600">Discover and hire top talent</p>
                 </button>
-                <button onClick={() => handleSelectItem("my-jobs")} className="rounded-2xl border border-gray-100 bg-white p-8 text-center shadow-sm transition hover:shadow-lg">
-                  <TrendingUp className="mx-auto mb-4 text-purple-600" size={40} />
+                <button
+                  onClick={() => handleSelectItem("my-jobs")}
+                  className="group rounded-2xl border border-gray-100 bg-white p-6 sm:p-8 text-center shadow-sm transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
+                >
+                  <div className="mx-auto mb-4 w-fit p-3 rounded-2xl bg-purple-50 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
+                    <TrendingUp className="text-purple-600" size={32} />
+                  </div>
                   <h3 className="text-lg font-bold">My Jobs</h3>
                   <p className="mt-2 text-sm text-gray-600">Manage and track your job postings</p>
                 </button>
@@ -359,19 +448,22 @@ export default function ClientDashboard() {
             </section>
 
             {showModal && selectedContract && (
-              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-                <div className="w-full max-w-2xl overflow-hidden rounded-3xl bg-white shadow-2xl">
-                  <div className="flex items-center justify-between bg-indigo-600 p-6 text-white">
-                    <div>
-                      <h2 className="text-2xl font-bold">{selectedContract.freelancer.name}</h2>
-                      <p className="text-indigo-100">{selectedContract.freelancer.title}</p>
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm animate-[fadeInUp_0.2s_ease-out]">
+                <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto overflow-hidden rounded-3xl bg-white shadow-2xl">
+                  <div className="flex items-center justify-between bg-indigo-600 p-5 sm:p-6 text-white">
+                    <div className="min-w-0">
+                      <h2 className="text-xl sm:text-2xl font-bold truncate">{selectedContract.freelancer.name}</h2>
+                      <p className="text-indigo-100 truncate">{selectedContract.freelancer.title}</p>
                     </div>
-                    <button onClick={() => setShowModal(false)} className="text-3xl transition hover:rotate-90">
-                      ×
+                    <button
+                      onClick={() => setShowModal(false)}
+                      className="shrink-0 rounded-full p-1 transition-transform duration-200 hover:rotate-90 hover:bg-white/10"
+                    >
+                      <X size={26} />
                     </button>
                   </div>
 
-                  <div className="space-y-5 p-6">
+                  <div className="space-y-5 p-5 sm:p-6">
                     <div className="grid grid-cols-2 gap-4">
                       <div className="rounded-xl bg-slate-50 p-4">
                         <p className="text-sm text-gray-500">Contract Amount</p>
@@ -409,7 +501,10 @@ export default function ClientDashboard() {
                   </div>
 
                   <div className="flex justify-end border-t p-5">
-                    <button onClick={() => setShowModal(false)} className="rounded-xl bg-gray-200 px-6 py-2 hover:bg-gray-300">
+                    <button
+                      onClick={() => setShowModal(false)}
+                      className="rounded-xl bg-gray-200 px-6 py-2 transition-all duration-200 hover:bg-gray-300 active:scale-95"
+                    >
                       Close
                     </button>
                   </div>
@@ -422,8 +517,14 @@ export default function ClientDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 px-4 py-6 lg:px-6">
-      <div className="mx-auto flex max-w-9xl flex-col gap-6 lg:flex-row">
+    <div className="min-h-screen overflow-x-hidden bg-slate-50 px-2 py-3 sm:px-4 sm:py-6 lg:px-6">
+      <style>{`
+        @keyframes fadeInUp {
+          from { opacity: 0; transform: translateY(12px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
+      <div className="mx-auto flex max-w-9xl flex-col gap-4 lg:flex-row lg:gap-6">
         <CurvedSidebar
           title="Client Hub"
           subtitle="Client Menu"
@@ -433,7 +534,7 @@ export default function ClientDashboard() {
           footerAction={{ label: "Logout", icon: LogOut, onClick: handleLogout }}
         />
 
-        <div className="flex-1">{renderRightPanel()}</div>
+        <div className="min-w-0 flex-1 lg:ml-[19rem]">{renderRightPanel()}</div>
       </div>
     </div>
   );

@@ -128,7 +128,7 @@ const FeaturedFreelancers = () => {
             >
               {/* Top */}
               <div className="relative">
-                <div className="h-24 bg-gradient-to-r from-green-500 to-emerald-500" />
+                <div className="h-24 bg-gradient-to-r from-slate-900 via-emerald-700 to-sky-600" />
 
                 <div className="absolute left-6 top-10">
                   <div className="relative">
@@ -141,7 +141,7 @@ const FeaturedFreelancers = () => {
                     <span
                       className={`absolute bottom-1 right-1 h-4 w-4 rounded-full border-2 border-white ${
                         freelancer.online
-                          ? "bg-green-500"
+                          ? "bg-emerald-500"
                           : "bg-slate-400"
                       }`}
                     />
@@ -158,7 +158,7 @@ const FeaturedFreelancers = () => {
 
                   <BadgeCheck
                     size={18}
-                    className="text-green-600"
+                    className="text-emerald-600"
                   />
                 </div>
 
@@ -201,14 +201,14 @@ const FeaturedFreelancers = () => {
 
                 {/* Rate */}
                 <div className="mt-6 flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-green-600">
+                  <div className="flex items-center gap-2 text-emerald-600">
                     <CircleDollarSign size={18} />
                     <span className="font-bold">
                       {freelancer.rate}
                     </span>
                   </div>
 
-                  <button className="flex items-center gap-2 font-medium text-green-600 transition group-hover:translate-x-1">
+                  <button className="flex items-center gap-2 font-medium text-emerald-600 transition group-hover:translate-x-1">
                     View Profile
                     <ArrowRight size={16} />
                   </button>
@@ -225,7 +225,7 @@ const FeaturedFreelancers = () => {
           viewport={{ once: true }}
           className="mt-14 text-center"
         >
-          <button className="rounded-2xl bg-green-600 px-8 py-4 font-semibold text-white transition hover:bg-green-700">
+          <button className="rounded-2xl bg-slate-900 px-8 py-4 font-semibold text-white transition hover:bg-slate-700">
             View All Freelancers
           </button>
         </motion.div>
