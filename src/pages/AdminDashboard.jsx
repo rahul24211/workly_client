@@ -51,6 +51,7 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [mounted, setMounted] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const activeView = getAdminActiveView(location.pathname);
@@ -399,9 +400,11 @@ export default function AdminDashboard() {
         }
       `}</style>
       <div className="mx-auto flex max-w-9xl flex-col gap-4 lg:flex-row lg:gap-6">
-        <AdminSidebar activeItem={activeView} onSelectItem={handleSelectItem} />
+        <AdminSidebar activeItem={activeView} onSelectItem={handleSelectItem} onCollapsedChange={setIsSidebarCollapsed} />
 
-        <div className="min-w-0 flex-1 lg:ml-[19rem]">{renderRightPanel()}</div>
+        <div className={`min-w-0 flex-1 transition-[margin-left] duration-300 ease-out ${isSidebarCollapsed ? "lg:ml-24" : "lg:ml-72"}`}>
+          {renderRightPanel()}
+        </div>
       </div>
     </div>
   );

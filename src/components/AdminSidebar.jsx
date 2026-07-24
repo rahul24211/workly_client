@@ -20,7 +20,7 @@ const links = [
   { id: "notifications", label: "Notifications", icon: Bell, to: "/adminDashboard/notifications" },
 ];
 
-export default function AdminSidebar({ activeItem, onSelectItem }) {
+export default function AdminSidebar({ activeItem, onSelectItem, onCollapsedChange }) {
   const navigate = useNavigate();
   const { logout } = useAuth();
 
@@ -36,6 +36,7 @@ export default function AdminSidebar({ activeItem, onSelectItem }) {
       links={links}
       activeItem={activeItem}
       onSelectItem={onSelectItem}
+      onCollapsedChange={onCollapsedChange}
       footerAction={{ label: "Logout", icon: LogOut, onClick: handleLogout }}
     />
   );

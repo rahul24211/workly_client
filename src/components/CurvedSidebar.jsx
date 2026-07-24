@@ -1,10 +1,14 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { NavLink } from "react-router-dom";
 import { ChevronLeft, ChevronRight, Menu, X } from "lucide-react";
 
-export default function CurvedSidebar({ title, subtitle, links, footerAction, activeItem, onSelectItem }) {
+export default function CurvedSidebar({ title, subtitle, links, footerAction, activeItem, onSelectItem, onCollapsedChange }) {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+
+  useEffect(() => {
+    onCollapsedChange?.(isCollapsed);
+  }, [isCollapsed, onCollapsedChange]);
 
   const closeMobileMenu = () => setIsMobileOpen(false);
 

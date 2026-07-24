@@ -60,10 +60,10 @@ const HeroSection = () => {
             </div>
 
             <div className="mt-8 flex flex-wrap gap-4">
-              <a href="/register" className="inline-flex items-center gap-2 rounded-full bg-emerald-600 px-6 py-3.5 font-semibold text-white transition hover:bg-emerald-500">
+              <a href="/register-with-otp" className="inline-flex items-center gap-2 rounded-full bg-emerald-600 px-6 py-3.5 font-semibold text-white transition hover:bg-emerald-500">
                 Hire talent <ArrowRight size={18} />
               </a>
-              <a href="/register" className="inline-flex items-center gap-2 rounded-full border border-slate-300 bg-white px-6 py-3.5 font-semibold text-slate-700 transition hover:bg-slate-100">
+              <a href="/register-with-otp" className="inline-flex items-center gap-2 rounded-full border border-slate-300 bg-white px-6 py-3.5 font-semibold text-slate-700 transition hover:bg-slate-100">
                 Find work <Sparkles size={18} />
               </a>
             </div>

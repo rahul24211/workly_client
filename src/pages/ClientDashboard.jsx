@@ -63,6 +63,7 @@ export default function ClientDashboard() {
   const [selectedContract, setSelectedContract] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const { logout } = useAuth();
@@ -531,10 +532,13 @@ export default function ClientDashboard() {
           links={sidebarLinks}
           activeItem={activeView}
           onSelectItem={handleSelectItem}
+          onCollapsedChange={setIsSidebarCollapsed}
           footerAction={{ label: "Logout", icon: LogOut, onClick: handleLogout }}
         />
 
-        <div className="min-w-0 flex-1 lg:ml-[19rem]">{renderRightPanel()}</div>
+        <div className={`min-w-0 flex-1 transition-[margin-left] duration-300 ease-out ${isSidebarCollapsed ? "lg:ml-24" : "lg:ml-72"}`}>
+          {renderRightPanel()}
+        </div>
       </div>
     </div>
   );
